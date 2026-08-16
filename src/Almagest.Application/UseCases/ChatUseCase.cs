@@ -78,7 +78,7 @@ public sealed class ChatUseCase
 
         await _conversationStore.SaveSessionAsync(session, cancellationToken).ConfigureAwait(false);
 
-        var queryEmbedding = (await _embeddingService.EmbedAsync([userMessage], cancellationToken).ConfigureAwait(false))[0];
+        var queryEmbedding = (await _embeddingService.EmbedAsync([userMessage], EmbeddingPurpose.Query, cancellationToken).ConfigureAwait(false))[0];
         var candidates = await _chunkStore
             .SearchAsync(queryEmbedding, _retrievalOptions.TopK, filter, cancellationToken)
             .ConfigureAwait(false);

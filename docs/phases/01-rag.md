@@ -1,7 +1,8 @@
 # Phase 1 — Baseline RAG
 
-> Status: **in progress** · Target: ingest documents, ask questions in natural
-> language, get answers grounded in the indexed content with source attribution.
+> Status: **implemented, verified against a real corpus** · ingest documents,
+> ask questions in natural language, get answers grounded in the indexed
+> content with source attribution.
 
 ---
 
@@ -102,6 +103,42 @@ not a conclusion.
 Rejected: fixed-size splitting (cuts mid-sentence), semantic splitting (needs an
 extra model call per document, not justified at this stage).
 
+**Token counts are approximated by whitespace-delimited words, deliberately.**
+This is not a shortcut waiting to be replaced — it's the same class of
+decision as everywhere else this project approximates a token count (context
+budgeting in `AskQuestionUseCase`/`ChatUseCase` uses an identical
+chars-per-token estimate), made once instead of pulling in a tokenizer
+dependency for a number that only needs to be roughly right: chunk sizing
+tolerates being off by 10-20%, and a real tokenizer would add a dependency
+and a per-document cost for a precision this step doesn't need. It remains a
+known limitation in the sense that the number can drift from what the actual
+embedding/chat model's tokenizer would report, not in the sense that it was
+an oversight.
+
+**Overlap is reserved out of the budget up front, not added after chunks are
+built.** `budget = TargetTokens - (TargetTokens * OverlapRatio)`, and pieces
+are packed against that reduced budget; the overlap words are prefixed onto
+each chunk afterward. Computing the overlap first and then packing to the
+full `TargetTokens` would let `budget + overlap` exceed the configured chunk
+size — the whole point of a target size — so the reservation has to happen
+before packing, not as a post-hoc addition.
+
+**Whole paragraphs merge freely with neighbours; fragments of an oversized
+paragraph only merge with fragments of the same paragraph.** The first
+version never merged across paragraph breaks, which turned short-paragraph
+documents into one chunk per paragraph. Removing the rule entirely then
+allowed unrelated paragraphs to share a chunk. The distinction that resolves
+both is between a complete unit and a fragment of one — caught by a test
+written before the implementation.
+
+**Section-title attribution is a linear scan over document headings, not a
+binary search.** Each chunk is tagged with the last heading at or before its
+offset. Headings are ordered by offset already (the parsers produce them that
+way), so a binary search would be the standard move at scale — rejected here
+because a document's heading count is small enough (tens, not thousands) that
+the simpler linear scan doesn't cost anything measurable, and a binary search
+over a list this short would just be more code proving the same point.
+
 ### 3.4 Vector store — PostgreSQL + pgvector, HNSW index
 
 Exact nearest-neighbour search is O(n) and does not scale. pgvector offers two
@@ -116,26 +153,60 @@ container. The defensible reason is the operational one, not a feature list.
 Docker image must be `pgvector/pgvector:pg16` — plain `postgres` lacks the
 extension. `CREATE EXTENSION vector` runs as a migration.
 
-### 3.5 LLM access — Anthropic.SDK → IChatClient → Semantic Kernel
+### 3.5 LLM access — originally Anthropic.SDK → IChatClient → Semantic Kernel; both legs since replaced
 
-No first-party Anthropic connector exists for Semantic Kernel in .NET; the
-Microsoft team pointed at `Microsoft.Extensions.AI` as the path forward. The
-chain is:
+**As originally decided (Phase 1):** no first-party Anthropic connector
+existed for Semantic Kernel in .NET, and Anthropic itself had not yet
+published an official .NET package, so the plan was the community
+`Anthropic.SDK` NuGet package (unofficial, third-party-maintained) bridged
+through `IChatClient` into Semantic Kernel:
 
 ```
 Anthropic.SDK  →  IChatClient  →  AsChatCompletionService()  →  Kernel
 ```
 
-Layer responsibilities:
+**What actually happened, running this against a real account:** the
+community `Anthropic.SDK` package threw a `MissingMethodException` at
+runtime on the call path this project depends on
+(`AsIChatClient()`/`GetResponseAsync`) — a version-surface mismatch between
+what that package shipped and what was being called against it. By this
+point Anthropic had published its own official .NET package (NuGet package
+id `Anthropic`, distinct from the community `Anthropic.SDK`), which
+implements `Microsoft.Extensions.AI`'s `IChatClient` adapter directly and
+does not have this problem. The project migrated to it —
+`Almagest.Infrastructure.csproj` pins `Anthropic`, not `Anthropic.SDK`,
+today. The lesson generalizes past this one package: a third-party wrapper
+around a fast-moving provider API is a real risk category, the same
+diligence this project already applies to picking `pgsqlparser` over
+guessing and Microsoft's own ONNX/tokenizer packages over a niche wrapper
+(Phase 5 §3.2) — an official package, once one exists, is preferred over a
+community one filling the gap.
+
+**Semantic Kernel itself was removed later, separately.** It was never more
+than a bridge (`AsChatCompletionService()`) for the non-agentic chat/
+summarization/grounding path — Phase 4 built the actual agent loop on
+Microsoft Agent Framework instead of Semantic Kernel's plugin/planner
+abstractions (see `docs/phases/04-agent.md` §3.1), and once that landed,
+nothing in the shipped application still called through Semantic Kernel's
+bridge. Phase 5 removed the `Microsoft.SemanticKernel` package reference
+from `Almagest.Infrastructure` entirely; `ClaudeChatService` calls
+`IChatClient.GetResponseAsync`/`GetStreamingResponseAsync` directly, the
+same as every other Claude-calling class in the project. Semantic Kernel
+remains only in `Almagest.Lab`, the throwaway console app used to verify
+third-party APIs by reflection — not in the shipped application.
+
+Layer responsibilities, as they stand today:
 
 - `Microsoft.Extensions.AI` — low-level abstractions (`IChatClient`,
   `IEmbeddingGenerator`). The `ILogger` of the AI stack.
-- `Microsoft.Extensions.VectorData` — vector store abstractions.
-- `Semantic Kernel` — orchestration: prompt templates, plugins, agents. Earns
-  its place in Phase 4, not here.
+- The official `Anthropic` package — implements `IChatClient` against the
+  real Anthropic API.
+- `Microsoft.Agents.AI` (Microsoft Agent Framework) — the agent loop's
+  orchestration layer (Phase 4), built on the same `IChatClient`. Not
+  Semantic Kernel.
 
-Application depends only on the abstractions. SK, Anthropic.SDK and Npgsql are
-confined to Infrastructure.
+Application depends only on the abstractions. `Anthropic`, `Microsoft.Agents.AI`
+and Npgsql are confined to Infrastructure.
 
 `max_tokens` is **required** by the Anthropic API — omitting it returns an
 opaque 400. Set as a global default in `ConfigureOptions`.
@@ -145,11 +216,22 @@ opaque 400. Set as a global default in `ConfigureOptions`.
 | Parameter | Value | Rationale |
 |---|---|---|
 | Top-K | 5 | High K injects noise; low K misses the answer |
-| Similarity floor | 0.70 | Below this, answer "not found" rather than improvise |
+| Similarity floor | 0.45 (was 0.70) | Below this, answer "not found" rather than improvise |
 | Max context tokens | 4000 | Bounds cost and keeps the prompt inside the useful attention window |
 
-Both are configuration, tuned against the question set, not constants buried in
-code.
+These are configuration, tuned against real output, not constants buried in
+code. The similarity floor's original 0.70 was a guess made before this
+system had ever embedded a real document — it was never validated against
+`voyage-4`'s actual output range. Running real queries against a real,
+ingested 7-document/17-chunk corpus (after fixing the `input_type` query/
+document mismatch — see §3.5's sibling in `docs/phases/05-production.md`)
+showed genuinely relevant matches scoring 0.59-0.67 and irrelevant ones
+scoring up to ~0.40; 0.45 was chosen to sit below the relevant cluster (with
+margin, since these were deliberately well-phrased test queries, not
+natural ones) and above most of the irrelevant one. Based on a small manual
+sample (2 relevant/3 irrelevant cases) — re-tune against
+`tests/eval/questions.md`'s recall@5 once that harness has real coverage of
+this corpus, not by further manual spot-checks.
 
 ### 3.7 Grounding
 
@@ -193,15 +275,22 @@ apply the floor and decide what reaches the prompt.
 
 ## 5. Definition of done
 
-- [ ] `POST /documents` indexes a PDF and a Markdown file end to end
-- [ ] `POST /ask` returns an answer citing document and chunk
-- [ ] A question with no supporting content returns an explicit "not found"
-- [ ] Embedding model id stored per chunk; mismatch detected at query time
-- [ ] Unit tests: chunker (boundaries, overlap, empty input, oversized token)
-- [ ] Unit tests: both use cases with faked ports
-- [ ] `docker compose up -d` brings up PostgreSQL + pgvector
-- [ ] No secret in `appsettings.json`
-- [ ] README documents the decisions above and the known limitations table
+- [x] `POST /documents` indexes a PDF and a Markdown file end to end —
+      verified for real: 7 documents (PDF and Markdown) ingested, 17 chunks
+      produced
+- [x] `POST /ask` returns an answer citing document and chunk — verified for
+      real, with a corrected similarity floor (§3.6)
+- [x] A question with no supporting content returns an explicit "not found"
+      — verified for real
+- [ ] Embedding model id stored per chunk; mismatch detected at query time —
+      implemented and unit-tested; not exercised against a real
+      model-mismatch scenario
+- [x] Unit tests: chunker (boundaries, overlap, empty input, oversized token)
+- [x] Unit tests: both use cases with faked ports
+- [x] `docker compose up -d` brings up PostgreSQL + pgvector
+- [ ] No secret in `appsettings.json` — true by code review, not something a
+      test enforces
+- [x] README documents the decisions above and the known limitations table
 
 ---
 

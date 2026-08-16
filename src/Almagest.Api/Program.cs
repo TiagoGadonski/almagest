@@ -44,8 +44,16 @@ builder.Services.AddOpenTelemetry()
 // --- Composition root: environment-sourced configuration -------------------
 // Secrets never live in appsettings.json.
 
-var connectionString = Environment.GetEnvironmentVariable("ALMAGEST_CONNECTION_STRING")
-    ?? throw new InvalidOperationException("ALMAGEST_CONNECTION_STRING is not set.");
+// ALMAGEST_CONNECTION_STRING (Npgsql keyword=value form) is used as given.
+// DATABASE_URL (URI form, postgres://user:pass@host:port/db?...) is
+// translated automatically -- this is exactly the variable `fly postgres
+// attach` sets, so a Fly deployment needs no manual reformatting step
+// between attaching the database and the app being able to connect to it.
+var connectionString = Environment.GetEnvironmentVariable("ALMAGEST_CONNECTION_STRING") is { Length: > 0 } explicitConnectionString
+    ? explicitConnectionString
+    : Environment.GetEnvironmentVariable("DATABASE_URL") is { Length: > 0 } databaseUrl
+        ? PostgresConnectionStringTranslator.FromDatabaseUrl(databaseUrl)
+        : throw new InvalidOperationException("Neither ALMAGEST_CONNECTION_STRING nor DATABASE_URL is set.");
 
 var voyageApiKey = Environment.GetEnvironmentVariable("VOYAGE_API_KEY")
     ?? throw new InvalidOperationException("VOYAGE_API_KEY is not set.");
@@ -101,7 +109,19 @@ builder.Services.AddSingleton<ITextChunker, RecursiveTextChunker>();
 // Phase 1/2 defaults from docs/phases/ -- configuration, not constants
 // buried in code; tune these against a fixed question set, not by editing them here.
 builder.Services.AddSingleton(new ChunkingOptions(TargetTokens: 800, OverlapRatio: 0.12));
-builder.Services.AddSingleton(new RetrievalOptions(TopK: 5, SimilarityFloor: 0.70, MaxContextTokens: 4000));
+
+// SimilarityFloor: 0.45, not the original 0.70. The 0.70 default was never
+// validated against real voyage-4 output -- once the AskQuestionUseCase/
+// ChatUseCase query-embedding bug was fixed (queries were sent with
+// input_type="document" instead of "query", degrading alignment), real
+// relevant matches against the ingested corpus scored 0.59-0.67 and
+// irrelevant ones scored up to ~0.40. 0.45 sits below the observed
+// relevant cluster (with margin for real, less precisely-phrased user
+// questions) and above most of the irrelevant cluster. Based on a small
+// manual sample (n=2 relevant/n=3 irrelevant, 17 chunks) -- re-tune against
+// tests/eval/questions.md's recall@5 once that harness has real coverage,
+// not by further manual spot-checks here.
+builder.Services.AddSingleton(new RetrievalOptions(TopK: 5, SimilarityFloor: 0.45, MaxContextTokens: 4000));
 builder.Services.AddSingleton(new ConversationOptions(MaxActiveMessages: 20, RetainRecentMessages: 6));
 
 // --- Text-to-SQL (Phase 3) -----------------------------------------------
@@ -141,7 +161,54 @@ builder.Services.AddSingleton<IAgentService, AlmagestAgentService>();
 
 var app = builder.Build();
 
-app.MapGet("/health", () => "ok");
+// Checks real database connectivity, not just "the process is up" -- Fly's
+// own health check (fly.toml [[http_service.checks]]) polls this to decide
+// whether to route traffic to a machine, so a database outage should
+// report unhealthy here rather than a misleadingly green "ok".
+app.MapGet("/health", async (NpgsqlDataSource dataSource, ILogger<Program> logger, CancellationToken cancellationToken) =>
+{
+    try
+    {
+        await using var connection = await dataSource.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand("SELECT 1", connection);
+        await command.ExecuteScalarAsync(cancellationToken);
+        return Results.Ok("ok");
+    }
+    catch (Exception ex) when (ex is not OperationCanceledException)
+    {
+        // Logged server-side, not echoed to the caller -- this endpoint is
+        // public (it's what Fly's own health checker polls over the same
+        // internet-facing port as everything else), and an Npgsql exception
+        // message can include the host or a hint about which credential
+        // failed, neither of which belongs in an unauthenticated response.
+        logger.LogError(ex, "Health check: database connectivity failed.");
+        return Results.Problem(
+            title: "Database connectivity check failed",
+            statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
+});
+
+// Both a credential problem (our own server's Voyage key is bad -- a
+// misconfiguration, not the caller's fault) and a rate limit (the caller's
+// request is fine, the upstream provider is asking to slow down) are
+// distinguishable failures that used to fall through as a generic 500.
+// 502: this API is acting as a gateway to Voyage, and Voyage gave it a
+// response it can't use for a reason that's on the server, not the caller.
+// 429: propagate the same "too much load" signal Voyage gave us.
+static IResult MapEmbeddingProviderError(EmbeddingProviderException ex) => ex.Kind switch
+{
+    EmbeddingProviderErrorKind.InvalidCredentials => Results.Problem(
+        title: "Embedding provider authentication failed",
+        detail: "The embedding provider rejected the configured API key. This is a server-side configuration issue, not a problem with the request.",
+        statusCode: StatusCodes.Status502BadGateway),
+    EmbeddingProviderErrorKind.RateLimited => Results.Problem(
+        title: "Embedding provider rate limit exceeded",
+        detail: ex.RetryAfter is { } retryAfter
+            ? $"{ex.Message} Retry after approximately {retryAfter.TotalSeconds:F0}s."
+            : ex.Message,
+        statusCode: StatusCodes.Status429TooManyRequests),
+    _ => Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status502BadGateway),
+};
 
 app.MapPost("/documents", async (HttpRequest request, IngestDocumentUseCase useCase, CancellationToken cancellationToken) =>
 {
@@ -172,7 +239,16 @@ app.MapPost("/documents", async (HttpRequest request, IngestDocumentUseCase useC
     var title = form["title"].FirstOrDefault() is { Length: > 0 } providedTitle ? providedTitle : file.FileName;
 
     await using var stream = file.OpenReadStream();
-    var result = await useCase.ExecuteAsync(new IngestRequest(title, source.Value, stream), cancellationToken);
+
+    IngestResult result;
+    try
+    {
+        result = await useCase.ExecuteAsync(new IngestRequest(title, source.Value, stream), cancellationToken);
+    }
+    catch (EmbeddingProviderException ex)
+    {
+        return MapEmbeddingProviderError(ex);
+    }
 
     return Results.Ok(new
     {
@@ -208,7 +284,16 @@ app.MapPost("/ask", async (
         });
     }
 
-    var ragResult = await ragUseCase.ExecuteAsync(request.Question, cancellationToken);
+    AskResult ragResult;
+    try
+    {
+        ragResult = await ragUseCase.ExecuteAsync(request.Question, cancellationToken);
+    }
+    catch (EmbeddingProviderException ex)
+    {
+        return MapEmbeddingProviderError(ex);
+    }
+
     return Results.Ok(new { route = "rag", answer = ragResult.Answer, found = ragResult.Found, citations = ragResult.Citations });
 });
 
@@ -219,7 +304,15 @@ app.MapPost("/chat", async (ChatApiRequest request, ChatUseCase useCase, HttpRes
         return Results.BadRequest("Missing 'message'.");
     }
 
-    var result = await useCase.StreamAsync(request.SessionId, request.Message, cancellationToken: cancellationToken);
+    ChatStreamResult result;
+    try
+    {
+        result = await useCase.StreamAsync(request.SessionId, request.Message, cancellationToken: cancellationToken);
+    }
+    catch (EmbeddingProviderException ex)
+    {
+        return MapEmbeddingProviderError(ex);
+    }
 
     response.StatusCode = 200;
     response.Headers.ContentType = "text/event-stream";

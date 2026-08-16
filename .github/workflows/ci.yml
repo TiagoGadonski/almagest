@@ -43,10 +43,8 @@ jobs:
         run: dotnet restore Almagest.sln
 
       - name: Unit tests
-        # RecursiveTextChunkerTests is intentionally red (docs/phases/01-rag.md
-        # -- chunking strategy is hand-written, not implemented in this repo
-        # yet); it does not gate CI. No secret is required for this job --
-        # every unit test runs against faked ports.
+        # No secret is required for this job -- every unit test runs
+        # against faked ports, no network or database call.
         run: >
           dotnet test tests/Almagest.UnitTests/Almagest.UnitTests.csproj
           --configuration Release
@@ -77,8 +75,6 @@ jobs:
         # Threshold measured against this repo's real Application-layer
         # coverage (89.2% line at the time this workflow was written) --
         # 80% leaves real headroom rather than being a round-number guess.
-        # Excludes the intentionally-red chunker tests -- they'd fail this
-        # step for a reason unrelated to coverage.
         run: >
           dotnet test tests/Almagest.UnitTests/Almagest.UnitTests.csproj
           --configuration Release
@@ -103,9 +99,37 @@ jobs:
       - name: Restore
         run: dotnet restore Almagest.sln
 
+      # Optional: without this, Testcontainers pulls pgvector/pgvector:pg16
+      # anonymously, sharing Docker Hub's 100-pulls-per-6-hours-per-IP limit
+      # with every other job running on GitHub's shared runner IP pool --
+      # a real, commonly-hit source of CI flakiness for Testcontainers-based
+      # workflows, not a hypothetical one. Authenticating raises that to
+      # 5,000/day. Guarded so the job still runs without these secrets --
+      # see docs/deployment/ci-secrets.md.
+      - name: Log in to Docker Hub (avoids Testcontainers pull rate limits)
+        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Integration tests
         # Testcontainers pulls pgvector/pgvector:pg16 and runs it for real --
         # GitHub-hosted runners have Docker available out of the box. No
-        # secret required: embeddings used here are hand-built float[]
-        # arrays (docs/phases/05-production.md 3.1), not real model calls.
+        # API-key secret required: embeddings used here are hand-built
+        # float[] arrays (docs/phases/05-production.md §3.1), not real
+        # model calls.
         run: dotnet test tests/Almagest.IntegrationTests/Almagest.IntegrationTests.csproj --configuration Release
+
+  docker-build:
+    # Independent of the build/test jobs above: this validates the actual
+    # artifact `fly deploy` builds from (the multi-stage Dockerfile), which
+    # nothing else in this workflow exercises. A green build/unit-tests/
+    # integration-tests run proves the .NET code works; it says nothing
+    # about whether the container image that gets deployed even builds.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the deployable image
+        run: docker build -t almagest-api:ci .

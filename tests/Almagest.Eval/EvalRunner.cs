@@ -24,7 +24,7 @@ public static class EvalRunner
 
         foreach (var question in questions)
         {
-            var queryEmbedding = (await embeddingService.EmbedAsync([question.Question], cancellationToken).ConfigureAwait(false))[0];
+            var queryEmbedding = (await embeddingService.EmbedAsync([question.Question], EmbeddingPurpose.Query, cancellationToken).ConfigureAwait(false))[0];
             var retrieved = await chunkStore.SearchAsync(queryEmbedding, topK, filter: null, cancellationToken).ConfigureAwait(false);
 
             var documentIds = retrieved.Select(r => r.Chunk.DocumentId).Distinct().ToList();

@@ -98,4 +98,34 @@ public class ClaudeMetadataExtractorTests
         Assert.False(result.Succeeded);
         Assert.Null(result.Metadata);
     }
+
+    [Fact]
+    public async Task ExtractAsync_ChatClientThrows_DegradesWithoutThrowing()
+    {
+        // A transient provider failure (timeout, 5xx, rate limit) must
+        // degrade like every other failure mode above -- not propagate out
+        // of IngestDocumentUseCase and lose chunks that were already
+        // successfully parsed, chunked, and embedded (docs/phases/02-memory.md §3.4).
+        var chatClient = FakeChatClient.Throwing(new HttpRequestException("503 Service Unavailable"));
+        var extractor = new ClaudeMetadataExtractor(chatClient);
+
+        var result = await extractor.ExtractAsync(Guid.NewGuid(), "some document text");
+
+        Assert.False(result.Succeeded);
+        Assert.Null(result.Metadata);
+    }
+
+    [Fact]
+    public async Task ExtractAsync_CancellationRequested_PropagatesRatherThanDegrading()
+    {
+        // Cancellation is the caller aborting the whole operation on
+        // purpose -- it is not "metadata extraction failed" and must not be
+        // swallowed into a silent Succeeded=false the way a real provider
+        // failure is.
+        var chatClient = FakeChatClient.Throwing(new OperationCanceledException());
+        var extractor = new ClaudeMetadataExtractor(chatClient);
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            () => extractor.ExtractAsync(Guid.NewGuid(), "some document text"));
+    }
 }

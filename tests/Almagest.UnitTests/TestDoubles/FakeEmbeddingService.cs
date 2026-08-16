@@ -9,9 +9,13 @@ public sealed class FakeEmbeddingService(string modelId, Func<IReadOnlyList<stri
 
     public IReadOnlyList<string>? LastRequest { get; private set; }
 
-    public Task<IReadOnlyList<float[]>> EmbedAsync(IReadOnlyList<string> texts, CancellationToken cancellationToken = default)
+    public EmbeddingPurpose? LastPurpose { get; private set; }
+
+    public Task<IReadOnlyList<float[]>> EmbedAsync(
+        IReadOnlyList<string> texts, EmbeddingPurpose purpose, CancellationToken cancellationToken = default)
     {
         LastRequest = texts;
+        LastPurpose = purpose;
 
         var vectors = embed?.Invoke(texts)
             ?? texts.Select(text => new float[] { text.Length }).ToList();

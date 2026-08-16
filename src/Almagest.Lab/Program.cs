@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-var path = @"T:\projects\Almagest\samples\passos_servidor_taktiq.md";
+var path = @"T:\projects\Almagest\samples\cidades_inteligentes_rag.md";
 var text = File.ReadAllText(path);
 
 var chunker = new RecursiveTextChunker();

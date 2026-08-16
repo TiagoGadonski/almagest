@@ -94,11 +94,18 @@ minimizing what the model knows reduces both attack surface (it can't target
 a table it doesn't know is there) and hallucination (it can't invent a
 plausible-looking reference to something real but off-limits).
 
-### 3.4 Security -- five independent layers, each written as if the others failed
+### 3.4 Security -- defense in depth in five layers; per-layer isolation testing is next step
 
 This is the section the request asked to be treated as a requirement, not a
-detail. Each layer below is designed to hold on its own. None of them assumes
-an earlier layer worked correctly.
+detail. Each layer below is *designed* to hold on its own, written without
+assuming an earlier layer worked correctly. That design intent is not the
+same claim as "verified independent" -- Phase 5's integration suite
+(`ReadOnlyRoleTests`, `SqlExecutionPipelineTests`) exercises these layers
+working together, against a real Postgres role, which is real evidence the
+stack works end to end. It has not yet exercised each layer with the others
+deliberately disabled, which is the test that would actually prove
+independence rather than just describe the intent. Named as the next step,
+not claimed as already done.
 
 **Layer 1 -- constrained generation (reliability, not security).**
 Forced tool call, §3.2. Explicitly *not* trusted for safety -- it only

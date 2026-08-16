@@ -30,7 +30,13 @@ public sealed class OnnxEmbeddingService : IEmbeddingService, IDisposable
         ModelId = modelId;
     }
 
-    public Task<IReadOnlyList<float[]>> EmbedAsync(IReadOnlyList<string> texts, CancellationToken cancellationToken = default)
+    // EmbeddingPurpose is ignored: all-MiniLM-L6-v2 is a single symmetric
+    // encoder with no separate document/query mode (unlike Voyage, it was
+    // never trained with an asymmetric objective that projects the two into
+    // different regions of the embedding space) -- the same encoder call is
+    // correct for both, so there is nothing to translate.
+    public Task<IReadOnlyList<float[]>> EmbedAsync(
+        IReadOnlyList<string> texts, EmbeddingPurpose purpose, CancellationToken cancellationToken = default)
     {
         IReadOnlyList<float[]> embeddings = texts.Select(Embed).ToList();
         return Task.FromResult(embeddings);

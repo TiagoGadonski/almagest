@@ -28,14 +28,17 @@ plausibly reaches is the eval script's grading method, addressed in 3.5. The
 rest of this document proceeds without the per-artifact gating ceremony of
 Phases 1-4, because there is close to nothing here that ceremony applies to.
 
-**Stated plainly, so it isn't discovered by surprise later:** several of
-this phase's deliverables cannot be *verified end-to-end* in this
-environment -- there is no real Anthropic/Voyage key to run the eval script
-against, no cloud credentials to actually deploy, and no push access to
-watch a GitHub Actions run go green. Each of those is built and checked as
-far as it honestly can be (config validity, local execution where a real
-model isn't required, structural review), and the gap between "built" and
-"verified live" is named explicitly in §7, not glossed over.
+**Stated plainly, so it isn't discovered by surprise later:** some of this
+phase's deliverables have since been verified end-to-end against a real
+account and a real corpus (real `ANTHROPIC_API_KEY`/`VOYAGE_API_KEY`,
+7 documents ingested, 17 chunks, real `/ask` calls returning grounded
+answers with citations) -- but others still haven't: no cloud credentials
+exist to actually deploy, no push access exists to watch a GitHub Actions
+run go green, and the eval harness script itself has not been run end to
+end (its scoring logic is unit-tested; `tests/eval/questions.md` still
+holds placeholder rows that don't match the real ingested corpus). Each gap
+between "built" and "verified live" is named explicitly in §7, not glossed
+over.
 
 ---
 
@@ -66,7 +69,7 @@ model isn't required, structural review), and the gap between "built" and
 
 | Gap | Why it matters | Deferred to |
 |---|---|---|
-| Running the eval harness against real models in this session | No Anthropic/Voyage credentials here, and ingestion is still blocked on `RecursiveTextChunker` regardless (see §7) | The project owner, once both are available |
+| Running the eval harness script end to end | Ingestion works and has been verified against a real corpus, but `tests/eval/questions.md` still holds placeholder rows that don't match it, and `dotnet run --project tests/Almagest.Eval` hasn't itself been executed (see §7) | The project owner |
 | An actual live Fly.io deployment | No cloud credentials in this environment, and deploying is an action with real cost/consequence that needs the project owner doing it, or explicit confirmation plus credentials neither of which exist here | The project owner |
 | Watching a real GitHub Actions run go green | No push access from here | The project owner, on first push |
 | Distributed tracing backend (Jaeger/Tempo/anything hosted) | OpenTelemetry is wired with an OTLP exporter pointed at *a* collector; standing one up is infra ops, not app code | Later iteration |
@@ -218,12 +221,15 @@ src/Almagest.Infrastructure/
 tests/eval/
   questions.md                  Human-authored question/expected-fact/
                                  expected-document table.
-  EvalRunner (console app or a
-  dotnet-run-able script)       Computes recall@5 and accuracy against
-                                 AskQuestionUseCase; not runnable to
-                                 completion here (blocked on ingestion --
-                                 see §7), but structurally complete and
-                                 unit-testable on its own scoring logic.
+  Almagest.Eval (console app,
+  dotnet-run-able)              Computes recall@5 and accuracy against
+                                 AskQuestionUseCase. Ingestion it depends on
+                                 has been verified for real; the script
+                                 itself has not been run end to end because
+                                 questions.md is still placeholder content
+                                 (see §7). Structurally complete and
+                                 unit-testable on its own scoring logic
+                                 regardless.
 
 .github/workflows/ci.yml        build -> unit tests -> integration tests ->
                                  coverage gate on Almagest.Application.
@@ -281,11 +287,13 @@ README.md                       Rewritten: badge, deploy link, full
 
 This list is the point of the section, not an afterthought:
 
-- **The eval harness cannot run to completion in this environment.**
-  `RecursiveTextChunker` has been an intentional stub since Phase 1 --
-  ingestion throws before any document produces retrievable chunks. Real
-  recall@5/accuracy numbers require the project owner's chunker
-  implementation *and* real API credentials, neither available here.
+- **The eval harness script has not been run end to end.** Ingestion itself
+  works and has been verified for real (7 documents, 17 chunks, real Voyage/
+  Claude calls). What's still missing: `tests/eval/questions.md` holds
+  placeholder rows that don't correspond to the documents actually ingested,
+  and `dotnet run --project tests/Almagest.Eval` has not itself been
+  executed against them. Its scoring logic (recall@5, accuracy) is
+  unit-tested against hand-built fixtures independent of this gap.
 - **No live GitHub Actions run has been observed.** The workflow file is
   reviewed for syntactic and logical correctness, not proven green.
 - **No live deployment exists.** `fly.toml` is unexecuted configuration.

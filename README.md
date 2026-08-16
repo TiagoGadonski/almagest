@@ -1,25 +1,32 @@
 # Almagest
 
 <!-- Replace <owner>/almagest once this repo has a real GitHub remote --
-     the workflow is written and reviewed (docs/phases/05-production.md §7)
-     but has never been observed running, so the badge is honest about
-     showing "no runs yet" until then. -->
+     the workflow is written, reviewed, and passes actionlint + a local
+     `docker build` (see docs/deployment/), but has never been observed
+     running in GitHub's own runners, so the badge is honest about showing
+     "no runs yet" until then. -->
 [![CI](https://github.com/<owner>/almagest/actions/workflows/ci.yml/badge.svg)](https://github.com/<owner>/almagest/actions/workflows/ci.yml)
 ![.NET 8](https://img.shields.io/badge/.NET-8-512BD4)
 ![License](https://img.shields.io/badge/license-unlicensed-lightgrey)
+<!-- Swap for a green "live" badge linking the real https://<app>.fly.dev
+     URL after the first real `fly deploy` (docs/deployment/first-deploy.md).
+     Points at the deploy guide instead until then, on purpose -- a badge
+     that quietly links nowhere real is worse than one that says so. -->
+[![Deploy](https://img.shields.io/badge/deploy-not_yet_live-lightgrey)](docs/deployment/first-deploy.md)
 
 A personal knowledge assistant over your own documents and data: ask a
 question in natural language and get an answer grounded in your files
-(RAG, with citations), your structured personal data (text-to-SQL, five
-independent security layers), or both — routed automatically, with a small
+(RAG, with citations), your structured personal data (text-to-SQL, five-layer
+defense in depth), or both — routed automatically, with a small
 set of side-effecting tools (create a note, set a reminder) gated behind
 explicit approval. Built as a portfolio project in .NET 8 Clean
 Architecture, where every technical decision has to be defensible, not
 just working.
 
-**Deploy:** [`fly.toml`](fly.toml) targets Fly.io with a managed Fly
-Postgres (pgvector extension). Not deployed live from this environment —
-see [Deploy](#deploy) below.
+**Deploy:** [`fly.toml`](fly.toml) targets Fly.io with Fly Managed Postgres
+(`vector` extension). Exact first-deploy command sequence:
+[`docs/deployment/first-deploy.md`](docs/deployment/first-deploy.md). Not
+deployed live from this environment — see [Deploy](#deploy) below.
 
 ---
 
@@ -29,7 +36,7 @@ see [Deploy](#deploy) below.
 |---|---|---|
 | 1 — RAG | Ingest PDF/Markdown, chunk, embed, retrieve, answer with per-claim citations, explicit "not found" below a similarity floor | [`docs/phases/01-rag.md`](docs/phases/01-rag.md) |
 | 2 — Memory | Persisted conversations, context-window summarization (not truncation), schema-validated structured metadata extraction at ingest, metadata-filtered retrieval, streaming chat | [`docs/phases/02-memory.md`](docs/phases/02-memory.md) |
-| 3 — Text-to-SQL | Natural language over personal data (contacts/projects/tasks/calendar), SQL as structured output, five independent security layers, RAG-vs-SQL routing | [`docs/phases/03-text-to-sql.md`](docs/phases/03-text-to-sql.md) |
+| 3 — Text-to-SQL | Natural language over personal data (contacts/projects/tasks/calendar), SQL as structured output, five-layer defense in depth, RAG-vs-SQL routing | [`docs/phases/03-text-to-sql.md`](docs/phases/03-text-to-sql.md) |
 | 4 — Agent | RAG and text-to-SQL become tools an agent chooses between; side-effecting tools (create note, set reminder) require explicit approval; bounded iteration loop | [`docs/phases/04-agent.md`](docs/phases/04-agent.md) |
 | 5 — Production | Real-Postgres integration tests, offline embedding fallback, CI with a coverage gate, OpenTelemetry tracing, an eval harness, deployment manifest | [`docs/phases/05-production.md`](docs/phases/05-production.md) |
 
@@ -42,7 +49,7 @@ Api  (Almagest.Api — minimal API, composition root)
   POST /chat        multi-turn chat, session memory, streaming
   POST /agent       tool-calling agent turn (may pause for approval)
   POST /agent/approve  resume a paused agent turn
-  GET  /health
+  GET  /health      checks real database connectivity, not just process liveness
        │
        ▼
 Application  (Almagest.Application — no I/O, ports only, unit-tested with fakes)
@@ -55,7 +62,7 @@ Application  (Almagest.Application — no I/O, ports only, unit-tested with fake
        │
        ▼
 Infrastructure  (Almagest.Infrastructure — one adapter per port, all I/O lives here)
-  ├─ Pdf/MarkdownDocumentParser, RecursiveTextChunker*
+  ├─ Pdf/MarkdownDocumentParser, RecursiveTextChunker
   ├─ VoyageEmbeddingService  ──────────────►  Voyage AI (embeddings)
   ├─ OnnxEmbeddingService    ──────────────►  local ONNX runtime (offline fallback)
   ├─ PgVectorChunkStore, PostgresConversationStore,
@@ -74,13 +81,19 @@ Domain  (Almagest.Domain — no AI or database dependency)
 ```
 
 Dependencies point inward only: `Domain` references nothing; `Application`
-references `Domain` plus `Microsoft.Extensions.AI` abstractions only;
-`Anthropic.SDK`, `Microsoft.Agents.AI`, `Npgsql`, and ONNX Runtime are
-confined to `Infrastructure`. No concrete AI or database type crosses the
-`Application` boundary.
+references `Domain` plus `Microsoft.Extensions.AI` abstractions only; the
+official `Anthropic` package, `Microsoft.Agents.AI`, `Npgsql`, and ONNX
+Runtime are confined to `Infrastructure`. No concrete AI or database type
+crosses the `Application` boundary.
 
-`*` `RecursiveTextChunker` is an intentional stub — see
-[Known limitations](#known-limitations-and-next-steps).
+The agent loop (`AlmagestAgentService`) runs on Microsoft Agent Framework
+(`Microsoft.Agents.AI`), not Semantic Kernel. Semantic Kernel was Phase 1's
+original choice for LLM access generally, before Microsoft Agent Framework
+reached GA; Phase 5 removed it from `Almagest.Infrastructure` entirely —
+`ClaudeChatService` calls `IChatClient` directly, like every other
+Claude-calling class in the project. Semantic Kernel is retained only in
+`Almagest.Lab`, a throwaway console app, not in the shipped application. See
+[ADR 5](docs/adr/0005-microsoft-agent-framework-over-semantic-kernel.md).
 
 ## Run locally
 
@@ -105,19 +118,27 @@ dotnet test tests/Almagest.IntegrationTests         # real Postgres via Testcont
   the `almagest_readonly` role's actual grants, and the AST validator against
   a live executor — persistence correctness, not model quality.
 - **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs build,
-  unit tests, integration tests, and fails the build if `Almagest.Application`
-  line coverage drops below 80% (measured baseline: 89.2%) — no step needs a
-  secret. Reviewed for correctness, not yet observed running (no push target
-  from this environment).
+  unit tests, integration tests, a `docker-build` job that builds the same
+  `Dockerfile` Fly deploys from (nothing else in the workflow validates that
+  the deployable image actually builds), and fails the build if
+  `Almagest.Application` line coverage drops below 80% (measured baseline:
+  89.2%). No secret is required for any job — see
+  [`docs/deployment/ci-secrets.md`](docs/deployment/ci-secrets.md) for the
+  one optional pair that avoids a real Docker Hub rate-limit risk on the
+  integration-tests job. Passes `actionlint` and a local `docker build`;
+  not yet observed running in GitHub's own runners (no push target from
+  this environment).
 - **Eval harness** ([`tests/Almagest.Eval`](tests/Almagest.Eval),
   [`tests/eval/questions.md`](tests/eval/questions.md)) reports recall@5 and
   keyword-match accuracy against `AskQuestionUseCase` — mechanical grading,
-  no LLM judge. Its scoring logic is unit-tested against hand-built fixtures;
-  running it against real answers needs real API credentials and an
-  unblocked `RecursiveTextChunker`, neither available here. Run it with:
-  ```bash
-  dotnet run --project tests/Almagest.Eval
-  ```
+  no LLM judge. Its scoring logic is unit-tested against hand-built fixtures.
+  Ingestion itself has been run for real (7 documents, 17 chunks, real Voyage
+  and Claude calls, `/ask` returning grounded answers with citations) — but
+  the harness script (`dotnet run --project tests/Almagest.Eval`) has not
+  itself been executed end to end, and `tests/eval/questions.md` still holds
+  placeholder rows that don't match the documents actually ingested. Real
+  recall@5/accuracy numbers require rewriting `questions.md` against a real
+  corpus and running the script for real — not yet done.
 
 ## Observability
 
@@ -133,13 +154,24 @@ console exporter and directly via `ActivityListener` in
 ## Deploy
 
 [`fly.toml`](fly.toml) targets the existing multi-stage
-[`Dockerfile`](Dockerfile) unchanged, with Fly Postgres as the managed
-database — the same `api`/`db` split as `docker-compose.yml`, ported to a
-host that runs it without operating a VM directly. Setup commands are
-documented as comments in the manifest itself. **Not deployed from this
-environment** — no Fly.io credentials here; deploying is an action with
-real cost that needs the project owner present. See
-[`docs/phases/05-production.md`](docs/phases/05-production.md) §3.6.
+[`Dockerfile`](Dockerfile) unchanged, with **Fly Managed Postgres (MPG)** as
+the database — the same `api`/`db` split as `docker-compose.yml`, ported to
+a host that runs it without operating a VM directly. Specifically MPG, not
+Fly's older Postgres Flex product: Flex doesn't include `pgvector` without
+a custom image, MPG supports it as a toggleable extension. `DATABASE_URL`
+(the connection string `fly mpg attach` sets automatically) is read
+directly by the app and translated internally
+(`PostgresConnectionStringTranslator`) — no manual reformatting step.
+
+Exact command sequence for the first deploy — creating the app, the
+Postgres cluster, enabling `vector`, applying migrations, setting secrets,
+deploying, and verifying it's actually up:
+[`docs/deployment/first-deploy.md`](docs/deployment/first-deploy.md). Which
+CI secrets are (and aren't) required: [`docs/deployment/ci-secrets.md`](docs/deployment/ci-secrets.md).
+
+**Not deployed from this environment** — no Fly.io credentials here;
+deploying is an action with real cost that needs the project owner present.
+See [`docs/phases/05-production.md`](docs/phases/05-production.md) §3.6.
 
 ## Key decisions
 
@@ -151,10 +183,13 @@ real cost that needs the project owner present. See
   against JSON Schema** — every place a model must return structured data
   (metadata extraction, SQL generation), "it parsed" is never trusted as
   "it's valid."
-- **Text-to-SQL: five independent security layers**, each written assuming
-  the others already failed — constrained generation, allowlist,
-  real-grammar AST validation, a dedicated unprivileged database role,
-  bounded/rolled-back execution.
+- **Text-to-SQL: defense in depth across five layers** — constrained
+  generation, allowlist, real-grammar AST validation, a dedicated
+  unprivileged database role, bounded/rolled-back execution. Each layer is
+  *designed* to hold if the others fail; that design intent has not yet been
+  verified with a per-layer fault-injection test (each layer deliberately
+  disabled in turn to confirm the others still catch the attack) — see
+  [ADR 3](docs/adr/0003-five-layer-text-to-sql-security.md).
 - **Microsoft Agent Framework, not Semantic Kernel, for the Phase 4 agent
   loop** — `ChatClientAgent` wraps the same `IChatClient` already in use;
   `ApprovalRequiredAIFunction` gives first-party human-in-the-loop gating
@@ -171,20 +206,47 @@ linked above, and the five short ADRs in [`docs/adr/`](docs/adr/):
 
 ## Known limitations and next steps
 
-| Gap | Why | Deferred to |
+### Found and fixed by actually running the system
+
+Real ingestion and real `/ask` calls against 7 documents/17 chunks surfaced
+two bugs no test had caught. Both are fixed as of this writing — named here
+because they were real, not because they're still open:
+
+- **Query embeddings were sent with `input_type: "document"`** — the same
+  value used for indexed chunks, instead of `"query"`. Voyage trains
+  asymmetric query/document encoders; the mismatch silently degraded every
+  similarity score, and every `/ask` call returned "not found" regardless of
+  whether the answer was actually in the corpus. Fixed by adding an
+  `EmbeddingPurpose` (`Document`/`Query`) parameter to `IEmbeddingService`,
+  translated to Voyage's `input_type` by `VoyageEmbeddingService` and ignored
+  (with a comment explaining why) by `OnnxEmbeddingService`, whose model has
+  no asymmetric mode.
+- **`VoyageEmbeddingService` sent every chunk in one HTTP request**,
+  regardless of size — fine at the 17-chunk scale tested so far, but would
+  exceed Voyage's per-request token ceiling on a larger document. Fixed by
+  partitioning into batches under a configurable token/text-count ceiling
+  (defaults verified against Voyage's published API reference, not guessed).
+
+### Open
+
+| Gap | Why it matters | Next step |
 |---|---|---|
-| `RecursiveTextChunker` is an intentional stub | Chunking strategy is hand-written outside this project's scope; ingestion throws until implemented, its tests are deliberately red | The project owner |
-| Eval harness cannot run to completion here | Blocked on the chunker stub above *and* real Anthropic/Voyage credentials | The project owner |
+| Rate limiting is sized for a single burst, not an account-wide quota | `VoyageEmbeddingService`'s retry-with-backoff smooths over one request's transient 429s; nothing tracks or throttles against the account's overall RPM/TPM budget across concurrent requests | Later iteration |
+| No validation that extracted text is legible before embedding | A corrupted PDF extraction (garbled OCR, wrong encoding) would be chunked and embedded as-is; nothing checks the text is plausible language first | Later iteration |
+| No PII or secrets detection at ingestion | Documents are embedded and stored as given; no scan for SSNs, API keys, credentials, etc. before persisting | Later iteration |
+| No document deletion path; no `ON DELETE CASCADE` on the chunk foreign key | Removing a document today means deleting rows by hand in the right order; there's no API endpoint or cascade | Later iteration |
+| Token counts are approximated by whitespace-delimited words, not a real tokenizer | Chunk sizing, context-window budgeting, and cost estimates are all built on this approximation | Later iteration |
+| No per-layer fault-injection test for the text-to-SQL security design | Each of the five layers (see [ADR 3](docs/adr/0003-five-layer-text-to-sql-security.md)) is *designed* to hold if the others fail; that design intent has only been exercised as a working stack in the integration suite, never with a layer deliberately disabled to prove the others still catch the attack | Later iteration |
+| No automated drift check between the SQL allowlist constant and migration `GRANT`s | Integration tests exercise the grants that happen to be tested, not a full diff against `SqlAllowlist` | Later iteration |
+| No reranking, hybrid search, or query rewriting | Deliberately deferred since Phase 1 | Later iteration |
+| Eval accuracy grading is substring/keyword matching, no LLM judge | A coarse proxy for correctness; an LLM-judge upgrade needs its own individually-approved prompt | Later iteration |
+| OpenTelemetry's token-cost table is a hardcoded $/million-token constant | Not fed by a live pricing source, will drift out of date | Later iteration |
+| `Almagest.Infrastructure`'s test coverage is not measured | The CI coverage gate is scoped to `Almagest.Application` only (Phase 5 §3.3); Infrastructure — where the SQL security logic and Postgres role-switching live — has no measured number | Later iteration |
 | No live GitHub Actions run observed | No push access from this environment | First push |
 | No live Fly.io deployment | No cloud credentials here; deploying is a real-cost action needing the project owner present | The project owner |
-| Token cost is a hardcoded $/million-token table | Not fed by a live pricing source, will drift | Later iteration |
-| No tracing backend stood up | Spans are OTLP-ready; no Jaeger/Tempo/hosted collector receiving them yet | Later iteration |
-| Eval accuracy grading is substring/keyword matching | A coarse proxy for correctness; an LLM-judge upgrade needs its own individually-approved prompt | Later iteration |
-| No reranking, hybrid search, or query rewriting | Deliberately deferred since Phase 1 | Later iteration |
+| No load or performance testing | Nothing in scope needs it yet at personal-data scale | Later iteration |
 | No multi-statement SQL sessions ("narrow that down") | Phase 2's chat memory isn't wired into the SQL path | Later iteration |
 | Only note/reminder creation, no edit/delete | Update/delete is a larger blast radius per side-effecting action | Later iteration |
-| No load or performance testing | Nothing in scope needs it yet at personal-data scale | Later iteration |
-| No automated drift check between the SQL allowlist constant and migration `GRANT`s | Integration tests exercise the grants that happen to be tested, not a full diff | Later iteration |
 | Single-user throughout | Every phase scoped this way by design | Later iteration, if ever |
 
 ## Project structure
@@ -204,5 +266,6 @@ tests/
 docs/
   phases/0N-*.md            full scope, decisions, and rejected alternatives per phase
   adr/000N-*.md             five short architecture decision records
+  deployment/               first-deploy.md (exact commands), ci-secrets.md
 db/migrations/              versioned SQL, applied at container init
 ```

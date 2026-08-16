@@ -115,4 +115,22 @@ public class ChatUseCaseTests
 
         Assert.DoesNotContain("irrelevant text", chatService.LastUserPrompt);
     }
+
+    [Fact]
+    public async Task StreamAsync_EmbedsWithQueryPurpose_NotDocumentPurpose()
+    {
+        var embeddingService = new FakeEmbeddingService("test-model");
+        var chatService = new FakeChatService(streamFragments: ["answer"]);
+        var summarizer = new ConversationSummarizer(chatService);
+        var useCase = new ChatUseCase(
+            new FakeConversationStore(), embeddingService, new FakeChunkStore(), chatService,
+            summarizer, DefaultRetrievalOptions, DefaultConversationOptions);
+
+        var result = await useCase.StreamAsync(sessionId: null, "question");
+        await foreach (var _ in result.AnswerFragments)
+        {
+        }
+
+        Assert.Equal(EmbeddingPurpose.Query, embeddingService.LastPurpose);
+    }
 }

@@ -37,7 +37,7 @@ public sealed class AskQuestionUseCase
 
     public async Task<AskResult> ExecuteAsync(string question, CancellationToken cancellationToken = default)
     {
-        var queryEmbedding = (await _embeddingService.EmbedAsync([question], cancellationToken).ConfigureAwait(false))[0];
+        var queryEmbedding = (await _embeddingService.EmbedAsync([question], EmbeddingPurpose.Query, cancellationToken).ConfigureAwait(false))[0];
 
         var candidates = await _chunkStore.SearchAsync(queryEmbedding, _options.TopK, filter: null, cancellationToken).ConfigureAwait(false);
 

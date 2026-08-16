@@ -30,6 +30,7 @@ public class IngestDocumentUseCaseTests
         Assert.All(chunkStore.Saved, saved => Assert.Equal(result.DocumentId, saved.Chunk.DocumentId));
         Assert.All(chunkStore.Saved, saved => Assert.Equal("test-model", saved.EmbeddingModelId));
         Assert.Equal(["first chunk", "second chunk"], embeddingService.LastRequest);
+        Assert.Equal(EmbeddingPurpose.Document, embeddingService.LastPurpose);
         Assert.Equal(result.DocumentId, chunkStore.SavedDocument?.Id);
         Assert.Equal("report", chunkStore.SavedMetadata?.DocumentType);
     }

@@ -65,7 +65,23 @@ public sealed class ClaudeMetadataExtractor : IMetadataExtractor
 
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
-            var response = await _chatClient.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
+            ChatResponse response;
+            try
+            {
+                response = await _chatClient.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // Metadata is an enrichment, not a precondition for a
+                // document's chunks to exist and be searchable (see
+                // docs/phases/02-memory.md §3.4) -- a transient provider
+                // failure (timeout, 5xx, rate limit) degrades the same way a
+                // model refusal or repeated schema-validation failure
+                // already does below, instead of propagating out of
+                // IngestDocumentUseCase and losing chunks that were already
+                // successfully parsed, chunked, and embedded.
+                return new MetadataExtractionResult(false, null);
+            }
 
             var call = response.Messages
                 .SelectMany(message => message.Contents)

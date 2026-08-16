@@ -69,4 +69,15 @@ public class AskQuestionUseCaseTests
 
         Assert.Equal(["What is X?"], embeddingService.LastRequest);
     }
+
+    [Fact]
+    public async Task ExecuteAsync_EmbedsWithQueryPurpose_NotDocumentPurpose()
+    {
+        var embeddingService = new FakeEmbeddingService("test-model");
+        var useCase = new AskQuestionUseCase(embeddingService, new FakeChunkStore(), new FakeChatService(), Options);
+
+        await useCase.ExecuteAsync("What is X?");
+
+        Assert.Equal(EmbeddingPurpose.Query, embeddingService.LastPurpose);
+    }
 }

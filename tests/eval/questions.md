@@ -12,12 +12,13 @@ all of them must be present for the question to count as accurate.
 
 > **Placeholder set.** These rows describe the *shape* of a real eval set —
 > one plausible question per personal-document category this project is
-> meant to answer questions about. They are not yet backed by real ingested
-> documents (`RecursiveTextChunker` is still an intentional stub, see
-> `docs/phases/05-production.md` §7), so running `Almagest.Eval` against
-> them today reports 0/0, not a real score. Replace these rows with
-> questions against your own ingested documents once ingestion is
-> unblocked, keeping the same three-column shape.
+> meant to answer questions about. Ingestion itself works and has been
+> verified against a real corpus (7 documents, 17 chunks — see
+> `docs/phases/05-production.md` §7), but these specific rows don't
+> correspond to that corpus, and `Almagest.Eval` has not been run against
+> them. Replace these rows with questions against your own ingested
+> documents, keeping the same three-column shape, then run
+> `dotnet run --project tests/Almagest.Eval` for real.
 
 | Question | Expected Facts | Expected Document |
 |---|---|---|

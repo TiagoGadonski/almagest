@@ -54,7 +54,7 @@ public sealed class IngestDocumentUseCase
         }
 
         var embeddings = await _embeddingService
-            .EmbedAsync(textChunks.Select(chunk => chunk.Text).ToList(), cancellationToken)
+            .EmbedAsync(textChunks.Select(chunk => chunk.Text).ToList(), EmbeddingPurpose.Document, cancellationToken)
             .ConfigureAwait(false);
 
         var embeddedChunks = textChunks

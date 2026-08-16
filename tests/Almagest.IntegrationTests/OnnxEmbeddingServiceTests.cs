@@ -1,3 +1,4 @@
+using Almagest.Application.Ports;
 using Almagest.Infrastructure.Embeddings;
 
 namespace Almagest.IntegrationTests;
@@ -22,7 +23,7 @@ public class OnnxEmbeddingServiceTests
             "The cat sat on the mat.",
             "A feline rested on the rug.",
             "The stock market fell sharply today.",
-        ]);
+        ], EmbeddingPurpose.Document);
 
         var catToFeline = CosineSimilarity(embeddings[0], embeddings[1]);
         var catToStocks = CosineSimilarity(embeddings[0], embeddings[2]);
@@ -39,7 +40,7 @@ public class OnnxEmbeddingServiceTests
 
         using var service = new OnnxEmbeddingService(ModelPath, VocabPath);
 
-        var embeddings = await service.EmbedAsync(["a short sentence"]);
+        var embeddings = await service.EmbedAsync(["a short sentence"], EmbeddingPurpose.Document);
 
         Assert.Equal(384, embeddings[0].Length);
     }

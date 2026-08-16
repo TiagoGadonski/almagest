@@ -1,11 +1,14 @@
-# 3. Text-to-SQL: five independent security layers, each assuming the others failed
+# 3. Text-to-SQL: defense in depth in five layers
 
 ## Status
 
-Accepted (Phase 3). Automated end-to-end by Phase 5's integration tests
+Accepted (Phase 3). Exercised as a working stack — not yet verified layer by
+layer — by Phase 5's integration tests
 (`tests/Almagest.IntegrationTests/ReadOnlyRoleTests.cs`,
-`SqlExecutionPipelineTests.cs`), which run the real layers against a real
-Postgres role instead of a manual `psql` check.
+`SqlExecutionPipelineTests.cs`), which run the real layers together against
+a real Postgres role instead of a manual `psql` check. Per-layer isolation
+testing (each layer deliberately disabled in turn, to confirm the others
+still catch the attack) is the next step, not yet done — see Consequences.
 
 ## Context
 
@@ -14,13 +17,15 @@ calendar events, projects) that then actually executes is a real injection
 surface: prompt injection, model hallucination, or a subtly wrong query
 could read data outside the intended scope or attempt to modify it. This
 was explicitly called out as a first-class requirement, not an
-implementation detail, with the instruction to treat each defensive layer
-as independent — assume every other layer has already failed.
+implementation detail, with the instruction to design each defensive layer
+to hold independently — assuming every other layer has already failed. That
+is a design instruction, not a claim that independence has been verified;
+see Status and Consequences for what verification actually exists today.
 
 ## Decision
 
-Five layers, each sufficient on its own to stop the class of failure it
-targets:
+Five layers, each *designed* to be sufficient on its own to stop the class
+of failure it targets:
 
 1. **Constrained generation** — SQL is produced as a forced tool call
    (structured output), never free text. Reliability, not safety: reduces
@@ -50,8 +55,10 @@ targets:
 
 ## Consequences
 
-- No single bug anywhere in the pipeline is sufficient to cause data
-  exposure or modification outside the allowlisted, read-only scope.
+- By design, no single bug anywhere in the pipeline should be sufficient to
+  cause data exposure or modification outside the allowlisted, read-only
+  scope — a claim about the architecture's intent, not yet backed by a test
+  that disables layers one at a time to confirm it.
 - The security design costs real implementation and maintenance surface:
   an AST parser dependency (`pgsqlparser`), a second database role to
   provision and keep in sync with the allowlist, and tests that exercise
@@ -60,6 +67,11 @@ targets:
   constant in code and the migration's `GRANT` statements haven't drifted
   apart from each other beyond what the integration suite happens to
   exercise (see `docs/phases/05-production.md` §7).
+- Named, not hidden, gap: no per-layer fault-injection test exists yet
+  (e.g., allowlist deliberately bypassed to confirm AST validation alone
+  still rejects an off-scope table). The integration suite proves the
+  layers work correctly *together*; it doesn't yet prove any one of them
+  holds with the others turned off.
 
 ## Rejected alternatives
 
