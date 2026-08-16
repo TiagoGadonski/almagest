@@ -1,0 +1,1276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<coverage line-rate="0.892" branch-rate="0.7812" version="1.9" timestamp="1786774788" lines-covered="248" lines-valid="278" branches-covered="50" branches-valid="64">
+  <sources>
+    <source>T:/projects/Almagest/src/Almagest.Application/</source>
+  </sources>
+  <packages>
+    <package name="Almagest.Application" line-rate="0.892" branch-rate="0.7812" complexity="110">
+      <classes>
+        <class name="Almagest.Application.UseCases.DataAskResult" filename="UseCases/AskDataQuestionUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Answer" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="6" hits="11" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="6" hits="11" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.AskDataQuestionUseCase" filename="UseCases/AskDataQuestionUseCase.cs" line-rate="1" branch-rate="0.6666" complexity="7">
+          <methods>
+            <method name="BuildFormattingPrompt" signature="(System.String,Almagest.Application.Ports.QueryResultSet)" line-rate="1" branch-rate="0.6666" complexity="6">
+              <lines>
+                <line number="62" hits="1" branch="False" />
+                <line number="63" hits="1" branch="False" />
+                <line number="64" hits="1" branch="False" />
+                <line number="65" hits="1" branch="False" />
+                <line number="66" hits="1" branch="False" />
+                <line number="67" hits="1" branch="False" />
+                <line number="69" hits="7" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="217" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="70" hits="2" branch="False" />
+                <line number="71" hits="4" branch="True" condition-coverage="50% (2/4)">
+                  <conditions>
+                    <condition number="1" type="jump" coverage="50%" />
+                    <condition number="13" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="72" hits="2" branch="False" />
+                <line number="74" hits="1" branch="False" />
+                <line number="75" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name=".ctor" signature="(Almagest.Application.Ports.ISchemaProvider,Almagest.Application.Ports.ISqlGenerator,Almagest.Application.Ports.ISqlValidator,Almagest.Application.Ports.ISqlExecutor,Almagest.Application.Ports.IChatService)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="23" hits="8" branch="False" />
+                <line number="24" hits="8" branch="False" />
+                <line number="25" hits="8" branch="False" />
+                <line number="26" hits="8" branch="False" />
+                <line number="27" hits="8" branch="False" />
+                <line number="28" hits="8" branch="False" />
+                <line number="29" hits="8" branch="False" />
+                <line number="30" hits="8" branch="False" />
+                <line number="31" hits="8" branch="False" />
+                <line number="32" hits="8" branch="False" />
+                <line number="33" hits="8" branch="False" />
+                <line number="34" hits="8" branch="False" />
+                <line number="35" hits="8" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="62" hits="1" branch="False" />
+            <line number="63" hits="1" branch="False" />
+            <line number="64" hits="1" branch="False" />
+            <line number="65" hits="1" branch="False" />
+            <line number="66" hits="1" branch="False" />
+            <line number="67" hits="1" branch="False" />
+            <line number="69" hits="7" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="217" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="70" hits="2" branch="False" />
+            <line number="71" hits="4" branch="True" condition-coverage="50% (2/4)">
+              <conditions>
+                <condition number="1" type="jump" coverage="50%" />
+                <condition number="13" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="72" hits="2" branch="False" />
+            <line number="74" hits="1" branch="False" />
+            <line number="75" hits="1" branch="False" />
+            <line number="23" hits="8" branch="False" />
+            <line number="24" hits="8" branch="False" />
+            <line number="25" hits="8" branch="False" />
+            <line number="26" hits="8" branch="False" />
+            <line number="27" hits="8" branch="False" />
+            <line number="28" hits="8" branch="False" />
+            <line number="29" hits="8" branch="False" />
+            <line number="30" hits="8" branch="False" />
+            <line number="31" hits="8" branch="False" />
+            <line number="32" hits="8" branch="False" />
+            <line number="33" hits="8" branch="False" />
+            <line number="34" hits="8" branch="False" />
+            <line number="35" hits="8" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.AskDataQuestionUseCase/&lt;ExecuteAsync&gt;d__7" filename="UseCases/AskDataQuestionUseCase.cs" line-rate="1" branch-rate="1" complexity="8">
+          <methods>
+            <method name="MoveNext" signature="()" line-rate="1" branch-rate="1" complexity="8">
+              <lines>
+                <line number="38" hits="3" branch="False" />
+                <line number="39" hits="3" branch="False" />
+                <line number="41" hits="3" branch="False" />
+                <line number="42" hits="3" branch="True" condition-coverage="100% (4/4)">
+                  <conditions>
+                    <condition number="368" type="jump" coverage="100%" />
+                    <condition number="391" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="43" hits="1" branch="False" />
+                <line number="44" hits="1" branch="False" />
+                <line number="47" hits="2" branch="False" />
+                <line number="48" hits="2" branch="True" condition-coverage="100% (4/4)">
+                  <conditions>
+                    <condition number="456" type="jump" coverage="100%" />
+                    <condition number="479" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="49" hits="1" branch="False" />
+                <line number="50" hits="1" branch="False" />
+                <line number="53" hits="1" branch="False" />
+                <line number="55" hits="1" branch="False" />
+                <line number="56" hits="1" branch="False" />
+                <line number="58" hits="1" branch="False" />
+                <line number="59" hits="3" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="38" hits="3" branch="False" />
+            <line number="39" hits="3" branch="False" />
+            <line number="41" hits="3" branch="False" />
+            <line number="42" hits="3" branch="True" condition-coverage="100% (4/4)">
+              <conditions>
+                <condition number="368" type="jump" coverage="100%" />
+                <condition number="391" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="43" hits="1" branch="False" />
+            <line number="44" hits="1" branch="False" />
+            <line number="47" hits="2" branch="False" />
+            <line number="48" hits="2" branch="True" condition-coverage="100% (4/4)">
+              <conditions>
+                <condition number="456" type="jump" coverage="100%" />
+                <condition number="479" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="49" hits="1" branch="False" />
+            <line number="50" hits="1" branch="False" />
+            <line number="53" hits="1" branch="False" />
+            <line number="55" hits="1" branch="False" />
+            <line number="56" hits="1" branch="False" />
+            <line number="58" hits="1" branch="False" />
+            <line number="59" hits="3" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.RetrievalOptions" filename="UseCases/AskQuestionUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_TopK" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="6" hits="21" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="6" hits="21" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.Citation" filename="UseCases/AskQuestionUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_ChunkId" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="2" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="8" hits="2" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.AskResult" filename="UseCases/AskQuestionUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Answer" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="10" hits="15" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="10" hits="15" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.AskQuestionUseCase" filename="UseCases/AskQuestionUseCase.cs" line-rate="0.92" branch-rate="0.625" complexity="11">
+          <methods>
+            <method name="BuildContext" signature="(System.Collections.Generic.IReadOnlyList`1&lt;Almagest.Application.Ports.ScoredChunk&gt;)" line-rate="0.8665999999999999" branch-rate="0.625" complexity="8">
+              <lines>
+                <line number="71" hits="1" branch="False" />
+                <line number="72" hits="1" branch="False" />
+                <line number="73" hits="1" branch="False" />
+                <line number="75" hits="6" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="316" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="76" hits="1" branch="False" />
+                <line number="77" hits="1" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="93" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="78" hits="1" branch="False" />
+                <line number="80" hits="1" branch="True" condition-coverage="50% (2/4)">
+                  <conditions>
+                    <condition number="267" type="jump" coverage="50%" />
+                    <condition number="285" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="81" hits="0" branch="False" />
+                <line number="82" hits="0" branch="False" />
+                <line number="85" hits="1" branch="False" />
+                <line number="86" hits="1" branch="False" />
+                <line number="87" hits="1" branch="False" />
+                <line number="89" hits="1" branch="False" />
+                <line number="90" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name="&lt;ExecuteAsync&gt;b__7_0" signature="(Almagest.Application.Ports.ScoredChunk)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="47" hits="9" branch="False" />
+              </lines>
+            </method>
+            <method name="&lt;ExecuteAsync&gt;b__7_1" signature="(Almagest.Application.Ports.ScoredChunk)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="48" hits="8" branch="False" />
+              </lines>
+            </method>
+            <method name=".ctor" signature="(Almagest.Application.Ports.IEmbeddingService,Almagest.Application.Ports.IChunkStore,Almagest.Application.Ports.IChatService,Almagest.Application.UseCases.RetrievalOptions)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="29" hits="9" branch="False" />
+                <line number="30" hits="9" branch="False" />
+                <line number="31" hits="9" branch="False" />
+                <line number="32" hits="9" branch="False" />
+                <line number="33" hits="9" branch="False" />
+                <line number="34" hits="9" branch="False" />
+                <line number="35" hits="9" branch="False" />
+                <line number="36" hits="9" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="71" hits="1" branch="False" />
+            <line number="72" hits="1" branch="False" />
+            <line number="73" hits="1" branch="False" />
+            <line number="75" hits="6" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="316" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="76" hits="1" branch="False" />
+            <line number="77" hits="1" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="93" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="78" hits="1" branch="False" />
+            <line number="80" hits="1" branch="True" condition-coverage="50% (2/4)">
+              <conditions>
+                <condition number="267" type="jump" coverage="50%" />
+                <condition number="285" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="81" hits="0" branch="False" />
+            <line number="82" hits="0" branch="False" />
+            <line number="85" hits="1" branch="False" />
+            <line number="86" hits="1" branch="False" />
+            <line number="87" hits="1" branch="False" />
+            <line number="89" hits="1" branch="False" />
+            <line number="90" hits="1" branch="False" />
+            <line number="47" hits="9" branch="False" />
+            <line number="48" hits="8" branch="False" />
+            <line number="29" hits="9" branch="False" />
+            <line number="30" hits="9" branch="False" />
+            <line number="31" hits="9" branch="False" />
+            <line number="32" hits="9" branch="False" />
+            <line number="33" hits="9" branch="False" />
+            <line number="34" hits="9" branch="False" />
+            <line number="35" hits="9" branch="False" />
+            <line number="36" hits="9" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.AskQuestionUseCase/&lt;&gt;c" filename="UseCases/AskQuestionUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="&lt;ExecuteAsync&gt;b__7_2" signature="(Almagest.Application.Ports.ScoredChunk)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="64" hits="1" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="64" hits="1" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.AskQuestionUseCase/&lt;ExecuteAsync&gt;d__7" filename="UseCases/AskQuestionUseCase.cs" line-rate="1" branch-rate="1" complexity="2">
+          <methods>
+            <method name="MoveNext" signature="()" line-rate="1" branch-rate="1" complexity="2">
+              <lines>
+                <line number="39" hits="6" branch="False" />
+                <line number="40" hits="6" branch="False" />
+                <line number="42" hits="6" branch="False" />
+                <line number="50" hits="6" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="467" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="51" hits="5" branch="False" />
+                <line number="52" hits="5" branch="False" />
+                <line number="53" hits="5" branch="False" />
+                <line number="54" hits="5" branch="False" />
+                <line number="55" hits="5" branch="False" />
+                <line number="58" hits="1" branch="False" />
+                <line number="59" hits="1" branch="False" />
+                <line number="61" hits="1" branch="False" />
+                <line number="63" hits="1" branch="False" />
+                <line number="65" hits="1" branch="False" />
+                <line number="67" hits="1" branch="False" />
+                <line number="68" hits="6" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="39" hits="6" branch="False" />
+            <line number="40" hits="6" branch="False" />
+            <line number="42" hits="6" branch="False" />
+            <line number="50" hits="6" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="467" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="51" hits="5" branch="False" />
+            <line number="52" hits="5" branch="False" />
+            <line number="53" hits="5" branch="False" />
+            <line number="54" hits="5" branch="False" />
+            <line number="55" hits="5" branch="False" />
+            <line number="58" hits="1" branch="False" />
+            <line number="59" hits="1" branch="False" />
+            <line number="61" hits="1" branch="False" />
+            <line number="63" hits="1" branch="False" />
+            <line number="65" hits="1" branch="False" />
+            <line number="67" hits="1" branch="False" />
+            <line number="68" hits="6" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.ChatStreamResult" filename="UseCases/ChatUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_SessionId" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="10" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="8" hits="10" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.ChatUseCase" filename="UseCases/ChatUseCase.cs" line-rate="0.7254" branch-rate="0.5555" complexity="19">
+          <methods>
+            <method name="BuildUserPrompt" signature="(System.String,System.Collections.Generic.IReadOnlyList`1&lt;Almagest.Domain.Message&gt;,System.Collections.Generic.IReadOnlyList`1&lt;Almagest.Application.Ports.ScoredChunk&gt;,System.String)" line-rate="0.5757" branch-rate="0.5625" complexity="16">
+              <lines>
+                <line number="123" hits="4" branch="False" />
+                <line number="124" hits="4" branch="False" />
+                <line number="126" hits="4" branch="True" condition-coverage="100% (4/4)">
+                  <conditions>
+                    <condition number="8" type="jump" coverage="100%" />
+                    <condition number="24" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="127" hits="1" branch="False" />
+                <line number="128" hits="1" branch="False" />
+                <line number="129" hits="1" branch="False" />
+                <line number="131" hits="4" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="62" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="132" hits="2" branch="False" />
+                <line number="133" hits="2" branch="False" />
+                <line number="134" hits="20" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="179" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="135" hits="7" branch="False" />
+                <line number="136" hits="7" branch="False" />
+                <line number="137" hits="7" branch="False" />
+                <line number="139" hits="2" branch="False" />
+                <line number="140" hits="2" branch="False" />
+                <line number="142" hits="4" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="215" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="143" hits="0" branch="False" />
+                <line number="144" hits="0" branch="False" />
+                <line number="145" hits="0" branch="False" />
+                <line number="146" hits="0" branch="True" condition-coverage="0% (0/2)">
+                  <conditions>
+                    <condition number="467" type="jump" coverage="0%" />
+                  </conditions>
+                </line>
+                <line number="147" hits="0" branch="False" />
+                <line number="148" hits="0" branch="False" />
+                <line number="149" hits="0" branch="True" condition-coverage="0% (0/4)">
+                  <conditions>
+                    <condition number="415" type="jump" coverage="0%" />
+                    <condition number="433" type="jump" coverage="0%" />
+                  </conditions>
+                </line>
+                <line number="150" hits="0" branch="False" />
+                <line number="151" hits="0" branch="False" />
+                <line number="154" hits="0" branch="False" />
+                <line number="155" hits="0" branch="False" />
+                <line number="156" hits="0" branch="False" />
+                <line number="158" hits="0" branch="False" />
+                <line number="159" hits="0" branch="False" />
+                <line number="161" hits="4" branch="False" />
+                <line number="162" hits="4" branch="False" />
+                <line number="163" hits="4" branch="False" />
+              </lines>
+            </method>
+            <method name="&lt;StreamAsync&gt;b__10_0" signature="(Almagest.Application.Ports.ScoredChunk)" line-rate="1" branch-rate="0.5" complexity="2">
+              <lines>
+                <line number="86" hits="1" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="22" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+              </lines>
+            </method>
+            <method name=".ctor" signature="(Almagest.Application.Ports.IConversationStore,Almagest.Application.Ports.IEmbeddingService,Almagest.Application.Ports.IChunkStore,Almagest.Application.Ports.IChatService,Almagest.Application.UseCases.ConversationSummarizer,Almagest.Application.UseCases.RetrievalOptions,Almagest.Application.UseCases.ConversationOptions)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="30" hits="4" branch="False" />
+                <line number="31" hits="4" branch="False" />
+                <line number="32" hits="4" branch="False" />
+                <line number="33" hits="4" branch="False" />
+                <line number="34" hits="4" branch="False" />
+                <line number="35" hits="4" branch="False" />
+                <line number="36" hits="4" branch="False" />
+                <line number="37" hits="4" branch="False" />
+                <line number="38" hits="4" branch="False" />
+                <line number="39" hits="4" branch="False" />
+                <line number="40" hits="4" branch="False" />
+                <line number="41" hits="4" branch="False" />
+                <line number="42" hits="4" branch="False" />
+                <line number="43" hits="4" branch="False" />
+                <line number="44" hits="4" branch="False" />
+                <line number="45" hits="4" branch="False" />
+                <line number="46" hits="4" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="123" hits="4" branch="False" />
+            <line number="124" hits="4" branch="False" />
+            <line number="126" hits="4" branch="True" condition-coverage="100% (4/4)">
+              <conditions>
+                <condition number="8" type="jump" coverage="100%" />
+                <condition number="24" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="127" hits="1" branch="False" />
+            <line number="128" hits="1" branch="False" />
+            <line number="129" hits="1" branch="False" />
+            <line number="131" hits="4" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="62" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="132" hits="2" branch="False" />
+            <line number="133" hits="2" branch="False" />
+            <line number="134" hits="20" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="179" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="135" hits="7" branch="False" />
+            <line number="136" hits="7" branch="False" />
+            <line number="137" hits="7" branch="False" />
+            <line number="139" hits="2" branch="False" />
+            <line number="140" hits="2" branch="False" />
+            <line number="142" hits="4" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="215" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="143" hits="0" branch="False" />
+            <line number="144" hits="0" branch="False" />
+            <line number="145" hits="0" branch="False" />
+            <line number="146" hits="0" branch="True" condition-coverage="0% (0/2)">
+              <conditions>
+                <condition number="467" type="jump" coverage="0%" />
+              </conditions>
+            </line>
+            <line number="147" hits="0" branch="False" />
+            <line number="148" hits="0" branch="False" />
+            <line number="149" hits="0" branch="True" condition-coverage="0% (0/4)">
+              <conditions>
+                <condition number="415" type="jump" coverage="0%" />
+                <condition number="433" type="jump" coverage="0%" />
+              </conditions>
+            </line>
+            <line number="150" hits="0" branch="False" />
+            <line number="151" hits="0" branch="False" />
+            <line number="154" hits="0" branch="False" />
+            <line number="155" hits="0" branch="False" />
+            <line number="156" hits="0" branch="False" />
+            <line number="158" hits="0" branch="False" />
+            <line number="159" hits="0" branch="False" />
+            <line number="161" hits="4" branch="False" />
+            <line number="162" hits="4" branch="False" />
+            <line number="163" hits="4" branch="False" />
+            <line number="86" hits="1" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="22" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="30" hits="4" branch="False" />
+            <line number="31" hits="4" branch="False" />
+            <line number="32" hits="4" branch="False" />
+            <line number="33" hits="4" branch="False" />
+            <line number="34" hits="4" branch="False" />
+            <line number="35" hits="4" branch="False" />
+            <line number="36" hits="4" branch="False" />
+            <line number="37" hits="4" branch="False" />
+            <line number="38" hits="4" branch="False" />
+            <line number="39" hits="4" branch="False" />
+            <line number="40" hits="4" branch="False" />
+            <line number="41" hits="4" branch="False" />
+            <line number="42" hits="4" branch="False" />
+            <line number="43" hits="4" branch="False" />
+            <line number="44" hits="4" branch="False" />
+            <line number="45" hits="4" branch="False" />
+            <line number="46" hits="4" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.ChatUseCase/&lt;StreamAndPersistAsync&gt;d__11" filename="UseCases/ChatUseCase.cs" line-rate="1" branch-rate="1" complexity="4">
+          <methods>
+            <method name="MoveNext" signature="()" line-rate="1" branch-rate="1" complexity="4">
+              <lines>
+                <line number="104" hits="4" branch="False" />
+                <line number="105" hits="4" branch="False" />
+                <line number="107" hits="22" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="401" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="108" hits="4" branch="False" />
+                <line number="109" hits="5" branch="False" />
+                <line number="110" hits="5" branch="False" />
+                <line number="111" hits="5" branch="False" />
+                <line number="112" hits="5" branch="False" />
+                <line number="114" hits="4" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="634" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="115" hits="4" branch="False" />
+                <line number="116" hits="4" branch="False" />
+                <line number="117" hits="4" branch="False" />
+                <line number="118" hits="4" branch="False" />
+                <line number="119" hits="4" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="104" hits="4" branch="False" />
+            <line number="105" hits="4" branch="False" />
+            <line number="107" hits="22" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="401" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="108" hits="4" branch="False" />
+            <line number="109" hits="5" branch="False" />
+            <line number="110" hits="5" branch="False" />
+            <line number="111" hits="5" branch="False" />
+            <line number="112" hits="5" branch="False" />
+            <line number="114" hits="4" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="634" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="115" hits="4" branch="False" />
+            <line number="116" hits="4" branch="False" />
+            <line number="117" hits="4" branch="False" />
+            <line number="118" hits="4" branch="False" />
+            <line number="119" hits="4" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.ChatUseCase/&lt;StreamAsync&gt;d__10" filename="UseCases/ChatUseCase.cs" line-rate="1" branch-rate="0.9" complexity="10">
+          <methods>
+            <method name="MoveNext" signature="()" line-rate="1" branch-rate="0.9" complexity="10">
+              <lines>
+                <line number="50" hits="4" branch="False" />
+                <line number="51" hits="4" branch="True" condition-coverage="75% (3/4)">
+                  <conditions>
+                    <condition number="99" type="jump" coverage="100%" />
+                    <condition number="262" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="52" hits="4" branch="False" />
+                <line number="53" hits="4" branch="False" />
+                <line number="55" hits="4" branch="False" />
+                <line number="60" hits="4" branch="False" />
+                <line number="62" hits="4" branch="False" />
+                <line number="63" hits="4" branch="False" />
+                <line number="64" hits="4" branch="False" />
+                <line number="66" hits="4" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="643" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="67" hits="4" branch="False" />
+                <line number="68" hits="4" branch="False" />
+                <line number="69" hits="4" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="973" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="71" hits="4" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="1101" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="72" hits="1" branch="False" />
+                <line number="73" hits="1" branch="False" />
+                <line number="74" hits="1" branch="False" />
+                <line number="75" hits="1" branch="False" />
+                <line number="76" hits="1" branch="False" />
+                <line number="77" hits="1" branch="False" />
+                <line number="79" hits="4" branch="False" />
+                <line number="81" hits="4" branch="False" />
+                <line number="82" hits="4" branch="False" />
+                <line number="83" hits="4" branch="False" />
+                <line number="84" hits="4" branch="False" />
+                <line number="85" hits="4" branch="False" />
+                <line number="87" hits="4" branch="False" />
+                <line number="89" hits="4" branch="False" />
+                <line number="90" hits="4" branch="False" />
+                <line number="92" hits="4" branch="False" />
+                <line number="93" hits="4" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="50" hits="4" branch="False" />
+            <line number="51" hits="4" branch="True" condition-coverage="75% (3/4)">
+              <conditions>
+                <condition number="99" type="jump" coverage="100%" />
+                <condition number="262" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="52" hits="4" branch="False" />
+            <line number="53" hits="4" branch="False" />
+            <line number="55" hits="4" branch="False" />
+            <line number="60" hits="4" branch="False" />
+            <line number="62" hits="4" branch="False" />
+            <line number="63" hits="4" branch="False" />
+            <line number="64" hits="4" branch="False" />
+            <line number="66" hits="4" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="643" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="67" hits="4" branch="False" />
+            <line number="68" hits="4" branch="False" />
+            <line number="69" hits="4" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="973" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="71" hits="4" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="1101" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="72" hits="1" branch="False" />
+            <line number="73" hits="1" branch="False" />
+            <line number="74" hits="1" branch="False" />
+            <line number="75" hits="1" branch="False" />
+            <line number="76" hits="1" branch="False" />
+            <line number="77" hits="1" branch="False" />
+            <line number="79" hits="4" branch="False" />
+            <line number="81" hits="4" branch="False" />
+            <line number="82" hits="4" branch="False" />
+            <line number="83" hits="4" branch="False" />
+            <line number="84" hits="4" branch="False" />
+            <line number="85" hits="4" branch="False" />
+            <line number="87" hits="4" branch="False" />
+            <line number="89" hits="4" branch="False" />
+            <line number="90" hits="4" branch="False" />
+            <line number="92" hits="4" branch="False" />
+            <line number="93" hits="4" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.ConversationOptions" filename="UseCases/ConversationSummarizer.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_MaxActiveMessages" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="6" hits="11" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="6" hits="11" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.ConversationSummarizer" filename="UseCases/ConversationSummarizer.cs" line-rate="1" branch-rate="1" complexity="2">
+          <methods>
+            <method name="ShouldSummarize" signature="(System.Int32,Almagest.Application.UseCases.ConversationOptions)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="27" hits="6" branch="False" />
+              </lines>
+            </method>
+            <method name=".ctor" signature="(Almagest.Application.Ports.IChatService)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="21" hits="8" branch="False" />
+                <line number="22" hits="8" branch="False" />
+                <line number="23" hits="8" branch="False" />
+                <line number="24" hits="8" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="27" hits="6" branch="False" />
+            <line number="21" hits="8" branch="False" />
+            <line number="22" hits="8" branch="False" />
+            <line number="23" hits="8" branch="False" />
+            <line number="24" hits="8" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.ConversationSummarizer/&lt;&gt;c" filename="UseCases/ConversationSummarizer.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="&lt;SummarizeAsync&gt;b__4_0" signature="(Almagest.Domain.Message)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="32" hits="21" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="32" hits="21" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.ConversationSummarizer/&lt;SummarizeAsync&gt;d__4" filename="UseCases/ConversationSummarizer.cs" line-rate="1" branch-rate="1" complexity="2">
+          <methods>
+            <method name="MoveNext" signature="()" line-rate="1" branch-rate="1" complexity="2">
+              <lines>
+                <line number="31" hits="3" branch="False" />
+                <line number="33" hits="3" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="83" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="34" hits="3" branch="False" />
+                <line number="35" hits="3" branch="False" />
+                <line number="37" hits="3" branch="False" />
+                <line number="38" hits="3" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="31" hits="3" branch="False" />
+            <line number="33" hits="3" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="83" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="34" hits="3" branch="False" />
+            <line number="35" hits="3" branch="False" />
+            <line number="37" hits="3" branch="False" />
+            <line number="38" hits="3" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.CreateNoteResult" filename="UseCases/CreateNoteUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_NoteId" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="6" hits="2" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="6" hits="2" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.CreateNoteUseCase" filename="UseCases/CreateNoteUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name=".ctor" signature="(Almagest.Application.Ports.INoteStore)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="12" hits="5" branch="False" />
+                <line number="13" hits="5" branch="False" />
+                <line number="14" hits="5" branch="False" />
+                <line number="15" hits="5" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="12" hits="5" branch="False" />
+            <line number="13" hits="5" branch="False" />
+            <line number="14" hits="5" branch="False" />
+            <line number="15" hits="5" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.CreateNoteUseCase/&lt;ExecuteAsync&gt;d__2" filename="UseCases/CreateNoteUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="MoveNext" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="18" hits="1" branch="False" />
+                <line number="19" hits="1" branch="False" />
+                <line number="20" hits="1" branch="False" />
+                <line number="21" hits="1" branch="False" />
+                <line number="22" hits="1" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="18" hits="1" branch="False" />
+            <line number="19" hits="1" branch="False" />
+            <line number="20" hits="1" branch="False" />
+            <line number="21" hits="1" branch="False" />
+            <line number="22" hits="1" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.IngestRequest" filename="UseCases/IngestDocumentUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Title" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="6" hits="18" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="6" hits="18" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.IngestResult" filename="UseCases/IngestDocumentUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_DocumentId" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="10" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="8" hits="10" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.IngestDocumentUseCase" filename="UseCases/IngestDocumentUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name=".ctor" signature="(System.Collections.Generic.IEnumerable`1&lt;Almagest.Application.Ports.IDocumentParser&gt;,Almagest.Application.Ports.ITextChunker,Almagest.Application.Ports.IEmbeddingService,Almagest.Application.Ports.IChunkStore,Almagest.Application.Ports.IMetadataExtractor,Almagest.Application.Ports.ChunkingOptions)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="23" hits="4" branch="False" />
+                <line number="24" hits="4" branch="False" />
+                <line number="25" hits="4" branch="False" />
+                <line number="26" hits="4" branch="False" />
+                <line number="27" hits="4" branch="False" />
+                <line number="28" hits="4" branch="False" />
+                <line number="29" hits="4" branch="False" />
+                <line number="30" hits="4" branch="False" />
+                <line number="31" hits="7" branch="False" />
+                <line number="32" hits="4" branch="False" />
+                <line number="33" hits="4" branch="False" />
+                <line number="34" hits="4" branch="False" />
+                <line number="35" hits="4" branch="False" />
+                <line number="36" hits="4" branch="False" />
+                <line number="37" hits="4" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="23" hits="4" branch="False" />
+            <line number="24" hits="4" branch="False" />
+            <line number="25" hits="4" branch="False" />
+            <line number="26" hits="4" branch="False" />
+            <line number="27" hits="4" branch="False" />
+            <line number="28" hits="4" branch="False" />
+            <line number="29" hits="4" branch="False" />
+            <line number="30" hits="4" branch="False" />
+            <line number="31" hits="7" branch="False" />
+            <line number="32" hits="4" branch="False" />
+            <line number="33" hits="4" branch="False" />
+            <line number="34" hits="4" branch="False" />
+            <line number="35" hits="4" branch="False" />
+            <line number="36" hits="4" branch="False" />
+            <line number="37" hits="4" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.IngestDocumentUseCase/&lt;&gt;c" filename="UseCases/IngestDocumentUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="&lt;ExecuteAsync&gt;b__7_1" signature="(Almagest.Application.Ports.TextChunk)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="57" hits="3" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="57" hits="3" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.IngestDocumentUseCase/&lt;&gt;c__DisplayClass7_0" filename="UseCases/IngestDocumentUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="&lt;ExecuteAsync&gt;b__0" signature="(Almagest.Application.Ports.TextChunk,System.Single[])" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="62" hits="3" branch="False" />
+                <line number="63" hits="3" branch="False" />
+                <line number="64" hits="3" branch="False" />
+                <line number="65" hits="3" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="62" hits="3" branch="False" />
+            <line number="63" hits="3" branch="False" />
+            <line number="64" hits="3" branch="False" />
+            <line number="65" hits="3" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.IngestDocumentUseCase/&lt;ExecuteAsync&gt;d__7" filename="UseCases/IngestDocumentUseCase.cs" line-rate="1" branch-rate="1" complexity="6">
+          <methods>
+            <method name="MoveNext" signature="()" line-rate="1" branch-rate="1" complexity="6">
+              <lines>
+                <line number="40" hits="4" branch="False" />
+                <line number="41" hits="4" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="118" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="42" hits="1" branch="False" />
+                <line number="43" hits="1" branch="False" />
+                <line number="46" hits="3" branch="False" />
+                <line number="48" hits="3" branch="False" />
+                <line number="49" hits="3" branch="False" />
+                <line number="51" hits="3" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="439" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="52" hits="1" branch="False" />
+                <line number="53" hits="1" branch="False" />
+                <line number="56" hits="2" branch="False" />
+                <line number="58" hits="2" branch="False" />
+                <line number="60" hits="2" branch="False" />
+                <line number="61" hits="2" branch="False" />
+                <line number="66" hits="2" branch="False" />
+                <line number="68" hits="2" branch="False" />
+                <line number="69" hits="2" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="902" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="71" hits="2" branch="False" />
+                <line number="73" hits="2" branch="False" />
+                <line number="74" hits="3" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="40" hits="4" branch="False" />
+            <line number="41" hits="4" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="118" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="42" hits="1" branch="False" />
+            <line number="43" hits="1" branch="False" />
+            <line number="46" hits="3" branch="False" />
+            <line number="48" hits="3" branch="False" />
+            <line number="49" hits="3" branch="False" />
+            <line number="51" hits="3" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="439" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="52" hits="1" branch="False" />
+            <line number="53" hits="1" branch="False" />
+            <line number="56" hits="2" branch="False" />
+            <line number="58" hits="2" branch="False" />
+            <line number="60" hits="2" branch="False" />
+            <line number="61" hits="2" branch="False" />
+            <line number="66" hits="2" branch="False" />
+            <line number="68" hits="2" branch="False" />
+            <line number="69" hits="2" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="902" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="71" hits="2" branch="False" />
+            <line number="73" hits="2" branch="False" />
+            <line number="74" hits="3" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.SetReminderResult" filename="UseCases/SetReminderUseCase.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_ReminderId" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="6" hits="0" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="6" hits="0" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.SetReminderUseCase" filename="UseCases/SetReminderUseCase.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name=".ctor" signature="(Almagest.Application.Ports.IReminderStore)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="12" hits="5" branch="False" />
+                <line number="13" hits="5" branch="False" />
+                <line number="14" hits="5" branch="False" />
+                <line number="15" hits="5" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="12" hits="5" branch="False" />
+            <line number="13" hits="5" branch="False" />
+            <line number="14" hits="5" branch="False" />
+            <line number="15" hits="5" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.UseCases.SetReminderUseCase/&lt;ExecuteAsync&gt;d__2" filename="UseCases/SetReminderUseCase.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="MoveNext" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="18" hits="0" branch="False" />
+                <line number="19" hits="0" branch="False" />
+                <line number="20" hits="0" branch="False" />
+                <line number="21" hits="0" branch="False" />
+                <line number="22" hits="0" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="18" hits="0" branch="False" />
+            <line number="19" hits="0" branch="False" />
+            <line number="20" hits="0" branch="False" />
+            <line number="21" hits="0" branch="False" />
+            <line number="22" hits="0" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.AgentTurnResult" filename="Ports/IAgentService.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_SessionId" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="10" hits="17" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="10" hits="17" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.PendingApproval" filename="Ports/IAgentService.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_RequestId" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="12" hits="6" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="12" hits="6" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.EmbeddedChunk" filename="Ports/IChunkStore.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Chunk" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="20" hits="7" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="20" hits="7" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.ScoredChunk" filename="Ports/IChunkStore.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Chunk" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="22" hits="20" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="22" hits="20" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.ChunkSearchFilter" filename="Ports/IChunkStore.cs" line-rate="0" branch-rate="1" complexity="5">
+          <methods>
+            <method name="get_DocumentType" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="25" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_DateRangeStart" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="26" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_DateRangeEnd" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="27" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_Tags" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="28" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name=".ctor" signature="(System.String,System.Nullable`1&lt;System.DateOnly&gt;,System.Nullable`1&lt;System.DateOnly&gt;,System.Collections.Generic.IReadOnlyList`1&lt;System.String&gt;)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="24" hits="0" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="25" hits="0" branch="False" />
+            <line number="26" hits="0" branch="False" />
+            <line number="27" hits="0" branch="False" />
+            <line number="28" hits="0" branch="False" />
+            <line number="24" hits="0" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.ParsedDocument" filename="Ports/IDocumentParser.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Text" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="12" hits="10" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="12" hits="10" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.HeadingMarker" filename="Ports/IDocumentParser.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Offset" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="14" hits="0" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="14" hits="0" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.MetadataExtractionResult" filename="Ports/IMetadataExtractor.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Succeeded" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="10" hits="22" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="10" hits="22" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.SchemaDescription" filename="Ports/ISchemaProvider.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Tables" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="3" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="8" hits="3" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.TableDescription" filename="Ports/ISchemaProvider.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Name" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="10" hits="0" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="10" hits="0" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.ColumnDescription" filename="Ports/ISchemaProvider.cs" line-rate="0" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Name" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="12" hits="0" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="12" hits="0" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.QueryResultSet" filename="Ports/ISqlExecutor.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_ColumnNames" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="4" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="8" hits="4" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.SqlGenerationResult" filename="Ports/ISqlGenerator.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Succeeded" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="16" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="8" hits="16" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.SqlValidationResult" filename="Ports/ISqlValidator.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_IsValid" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="63" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="8" hits="63" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.TextChunk" filename="Ports/ITextChunker.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_Text" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="8" hits="15" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="8" hits="15" branch="False" />
+          </lines>
+        </class>
+        <class name="Almagest.Application.Ports.ChunkingOptions" filename="Ports/ITextChunker.cs" line-rate="1" branch-rate="1" complexity="1">
+          <methods>
+            <method name="get_TargetTokens" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="10" hits="2" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="10" hits="2" branch="False" />
+          </lines>
+        </class>
+      </classes>
+    </package>
+  </packages>
+</coverage>

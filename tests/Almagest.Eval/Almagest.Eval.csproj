@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <!-- No direct PackageReferences needed: Anthropic, Npgsql, and
+       Microsoft.Extensions.AI all come transitively through
+       Almagest.Infrastructure, which already pins their versions. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Almagest.Domain\Almagest.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Almagest.Application\Almagest.Application.csproj" />
+    <ProjectReference Include="..\..\src\Almagest.Infrastructure\Almagest.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,31 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+
+# .NET
+*.user
+project.lock.json
+*.nuget.props
+*.nuget.targets
+
+# IDEs
+.vs/
+.vscode/
+.idea/
+*.suo
+*.userprefs
+
+# Local secrets / environment (never commit)
+*.env
+.env
+secrets.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Downloaded ONNX models (fetched by scripts/download-onnx-model.sh, not committed)
+models/

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Semantic Kernel ships parts of its surface as [Experimental]; those
+         emit diagnostics that TreatWarningsAsErrors would turn into build
+         failures. SKEXP0001 covers the IChatClient <-> IChatCompletionService
+         adapters used here. -->
+    <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
+  </PropertyGroup>
+
+  <!-- Preview packages: pin exact versions, never a floating range. -->
+  <ItemGroup>
+    <PackageReference Include="Anthropic" Version="12.40.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.5.0" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.79.0" />
+  </ItemGroup>
+
+</Project>

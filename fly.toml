@@ -1,0 +1,57 @@
+# Fly.io deployment manifest for Almagest.Api.
+#
+# Not executed in this environment (no Fly.io credentials here) -- reviewed
+# for correctness against the existing Dockerfile/docker-compose.yml shape,
+# not proven live. See docs/phases/05-production.md §3.6 and §7.
+#
+# One-time setup (run by the project owner, from the repo root):
+#
+#   fly launch --no-deploy --copy-config           # creates the app, keeps this file
+#   fly postgres create --name almagest-db --vm-size shared-cpu-1x
+#   fly postgres attach almagest-db                # wires DATABASE_URL as a secret
+#   fly ssh console -C 'psql $DATABASE_URL -c "CREATE EXTENSION IF NOT EXISTS vector;"'
+#
+#   fly secrets set \
+#     ALMAGEST_CONNECTION_STRING="Host=<fly-postgres-host>;Port=5432;Username=<user>;Password=<password>;Database=<db>" \
+#     ANTHROPIC_API_KEY="sk-ant-..." \
+#     VOYAGE_API_KEY="pa-..."
+#
+#   fly deploy
+#
+# `fly postgres attach` sets DATABASE_URL in Fly's own connection-string
+# shape (postgres://...), not the Host=...;Port=...;Username=... shape
+# Almagest.Api reads (see src/Almagest.Api/Program.cs). Translate it into
+# ALMAGEST_CONNECTION_STRING by hand as shown above, or adapt Program.cs to
+# also accept a URL-form connection string -- deliberately left as a manual
+# step here rather than guessed at without a real Fly Postgres instance to
+# verify the exact host/port/sslmode Fly hands back.
+
+app = "almagest"
+primary_region = "gru"                  # São Paulo -- change to fit where the project owner actually is
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  ANTHROPIC_MODEL = "claude-haiku-4-5"
+  VOYAGE_MODEL = "voyage-4"
+  # ALMAGEST_CONNECTION_STRING, ANTHROPIC_API_KEY, VOYAGE_API_KEY: secrets,
+  # set via `fly secrets set` above -- never written here.
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "15s"
+    timeout = "5s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Application references Domain (and, later, the Microsoft.Extensions.AI
+       abstractions only). No concrete AI type crosses this boundary. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Almagest.Domain\Almagest.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

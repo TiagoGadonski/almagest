@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Infrastructure references Application to implement its ports.
+       Anthropic.SDK and Npgsql are confined to this layer. Semantic Kernel
+       is no longer a dependency here (Phase 5): ClaudeChatService now uses
+       IChatClient directly, same as every other Claude-calling class in
+       this project; only Almagest.Lab still references it. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Almagest.Application\Almagest.Application.csproj" />
+  </ItemGroup>
+
+  <!-- Preview / vector-data packages: pin exact versions, never a floating range. -->
+  <ItemGroup>
+    <PackageReference Include="Anthropic" Version="12.40.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.9.0" />
+    <PackageReference Include="Npgsql" Version="10.0.3" />
+    <PackageReference Include="Pgvector" Version="0.3.2" />
+    <PackageReference Include="PdfPig" Version="0.1.15" />
+    <PackageReference Include="JsonSchema.Net" Version="9.4.0" />
+    <PackageReference Include="pgsqlparser" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Agents.AI" Version="1.17.0" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.29.0" />
+    <PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" />
+  </ItemGroup>
+
+</Project>
