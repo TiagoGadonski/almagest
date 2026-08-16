@@ -4,31 +4,44 @@ using Almagest.Application.Ports;
 namespace Almagest.Infrastructure.Chunking;
 
 /// <summary>
-/// Recursive character-based chunker. Splits on progressively weaker
-/// separators (paragraph, line, sentence, word) until every piece fits the
-/// budget, then merges consecutive pieces back up to the budget without
-/// crossing paragraph boundaries. Token counts are approximated by
-/// whitespace-delimited words; a model tokenizer would be more accurate and
-/// is recorded as a known limitation.
+/// Recursive text chunker.
+///
+/// Paragraphs are the top-level unit. A paragraph that fits the budget stays
+/// whole; one that does not is broken down on progressively weaker separators
+/// (line, sentence, word) until every piece fits, and its pieces are marked as
+/// fragments of that paragraph.
+///
+/// Pieces are then merged back up to the budget. Whole paragraphs merge freely
+/// with their neighbours — without that, a document made of many short
+/// paragraphs yields one chunk per paragraph and each embedding carries almost
+/// no context. Fragments only merge with fragments of the same paragraph, so
+/// unrelated sections never end up sharing a chunk.
+///
+/// Token counts are approximated by whitespace-delimited words. A model
+/// tokenizer would be more accurate and is recorded as a known limitation.
 /// </summary>
 public sealed class RecursiveTextChunker : ITextChunker
 {
-    private static readonly string[] Separators = ["\n\n", "\n", ". ", " "];
+    private const string ParagraphSeparator = "\n\n";
 
-    private readonly record struct Piece(string Text, int Offset);
+    // Paragraphs are handled separately in SplitIntoUnits, so the cascade
+    // below only applies inside an oversized paragraph.
+    private static readonly string[] Separators = ["\n", ". ", " "];
+
+    private readonly record struct Piece(string Text, int Offset, int UnitId, bool IsFragment);
 
     public IReadOnlyList<TextChunk> Chunk(ParsedDocument document, ChunkingOptions options)
     {
         if (string.IsNullOrWhiteSpace(document.Text))
             return [];
 
-        // The overlap is prefixed onto each chunk, so it has to be reserved
-        // up front — otherwise budget + overlap exceeds TargetTokens.
+        // The overlap is prefixed onto each chunk, so it has to be reserved up
+        // front — otherwise budget + overlap exceeds TargetTokens.
         var overlapWords = (int)(options.TargetTokens * options.OverlapRatio);
         var budget = Math.Max(1, options.TargetTokens - overlapWords);
 
-        var pieces = Split(document.Text, offset: 0, budget, separatorIndex: 0);
-        var groups = Merge(document.Text, pieces, budget);
+        var pieces = SplitIntoUnits(document.Text, budget);
+        var groups = Merge(pieces, budget);
 
         var chunks = new List<TextChunk>(groups.Count);
 
@@ -39,6 +52,7 @@ public sealed class RecursiveTextChunker : ITextChunker
             if (i > 0 && overlapWords > 0)
             {
                 var carry = LastWords(groups[i - 1].Text, overlapWords);
+
                 if (carry.Length > 0)
                     text = $"{carry} {text}";
             }
@@ -53,17 +67,56 @@ public sealed class RecursiveTextChunker : ITextChunker
     }
 
     /// <summary>
-    /// Breaks the text down until every piece fits the budget. Each level of
+    /// Splits the document into paragraphs, breaking down any paragraph that
+    /// exceeds the budget. Offsets are tracked against the original text
+    /// because section attribution depends on them.
+    /// </summary>
+    private static List<Piece> SplitIntoUnits(string text, int maxWords)
+    {
+        var pieces = new List<Piece>();
+        var cursor = 0;
+        var unitId = 0;
+
+        foreach (var paragraph in text.Split(ParagraphSeparator))
+        {
+            var offset = cursor;
+            cursor += paragraph.Length + ParagraphSeparator.Length;
+
+            if (string.IsNullOrWhiteSpace(paragraph))
+                continue;
+
+            if (CountWords(paragraph) <= maxWords)
+            {
+                pieces.Add(new Piece(paragraph, offset, unitId, IsFragment: false));
+            }
+            else
+            {
+                foreach (var (fragment, fragmentOffset) in Split(paragraph, offset, maxWords, 0))
+                    pieces.Add(new Piece(fragment, fragmentOffset, unitId, IsFragment: true));
+            }
+
+            unitId++;
+        }
+
+        return pieces;
+    }
+
+    /// <summary>
+    /// Breaks an oversized paragraph down until every piece fits. Each level of
     /// recursion drops to a weaker separator, which is what guarantees
     /// termination: the separator list is finite.
     /// </summary>
-    private static List<Piece> Split(string text, int offset, int maxWords, int separatorIndex)
+    private static List<(string Text, int Offset)> Split(
+        string text,
+        int offset,
+        int maxWords,
+        int separatorIndex)
     {
         if (CountWords(text) <= maxWords || separatorIndex >= Separators.Length)
-            return [new Piece(text, offset)];
+            return [(text, offset)];
 
         var separator = Separators[separatorIndex];
-        var result = new List<Piece>();
+        var result = new List<(string, int)>();
         var cursor = 0;
 
         foreach (var part in text.Split(separator))
@@ -75,7 +128,7 @@ public sealed class RecursiveTextChunker : ITextChunker
                 continue;
 
             if (CountWords(part) <= maxWords)
-                result.Add(new Piece(part, partOffset));
+                result.Add((part, partOffset));
             else
                 result.AddRange(Split(part, partOffset, maxWords, separatorIndex + 1));
         }
@@ -84,12 +137,12 @@ public sealed class RecursiveTextChunker : ITextChunker
     }
 
     /// <summary>
-    /// Merges consecutive pieces up to the budget. Without this, an oversized
-    /// paragraph with no sentence punctuation collapses into one chunk per
-    /// word — each embedding then carries almost no meaning. Paragraph
-    /// boundaries are never merged across.
+    /// Merges consecutive pieces up to the budget. A boundary is forced when
+    /// moving between paragraphs and either side is a fragment: fragments carry
+    /// only part of their paragraph's meaning, so mixing them with a different
+    /// paragraph would blur two topics into one embedding.
     /// </summary>
-    private static List<Piece> Merge(string source, List<Piece> pieces, int maxWords)
+    private static List<Piece> Merge(List<Piece> pieces, int maxWords)
     {
         var groups = new List<Piece>();
 
@@ -99,43 +152,46 @@ public sealed class RecursiveTextChunker : ITextChunker
         var buffer = new StringBuilder();
         var bufferWords = 0;
         var bufferOffset = pieces[0].Offset;
-        var previousEnd = -1;
+        var bufferUnitId = pieces[0].UnitId;
+        var bufferHasFragment = false;
 
         foreach (var piece in pieces)
         {
             var words = CountWords(piece.Text);
-            var gap = previousEnd >= 0 ? piece.Offset - previousEnd : 0;
+            var startsNewParagraph = piece.UnitId != bufferUnitId;
+            var boundary = startsNewParagraph && (piece.IsFragment || bufferHasFragment);
 
-            var crossesParagraph = gap > 0
-                && source.AsSpan(previousEnd, gap).Contains("\n\n", StringComparison.Ordinal);
-
-            if (bufferWords > 0 && (crossesParagraph || bufferWords + words > maxWords))
+            if (bufferWords > 0 && (boundary || bufferWords + words > maxWords))
             {
-                groups.Add(new Piece(buffer.ToString(), bufferOffset));
+                groups.Add(new Piece(buffer.ToString(), bufferOffset, bufferUnitId, bufferHasFragment));
+
                 buffer.Clear();
                 bufferWords = 0;
                 bufferOffset = piece.Offset;
+                bufferHasFragment = false;
             }
-
-            if (buffer.Length > 0)
-                buffer.Append(' ');
+            else if (buffer.Length > 0)
+            {
+                buffer.Append(startsNewParagraph ? ParagraphSeparator : " ");
+            }
 
             buffer.Append(piece.Text);
             bufferWords += words;
-            previousEnd = piece.Offset + piece.Text.Length;
+            bufferUnitId = piece.UnitId;
+            bufferHasFragment |= piece.IsFragment;
         }
 
         if (buffer.Length > 0)
-            groups.Add(new Piece(buffer.ToString(), bufferOffset));
+            groups.Add(new Piece(buffer.ToString(), bufferOffset, bufferUnitId, bufferHasFragment));
 
         return groups;
     }
 
     /// <summary>
-    /// The section a chunk belongs to is the last heading that starts at or
-    /// before it. Headings are assumed ordered by offset, as produced by the
-    /// parsers. Linear scan: heading counts are small enough that a binary
-    /// search would not pay for itself.
+    /// The section a chunk belongs to is the last heading starting at or before
+    /// it. Headings are assumed ordered by offset, as produced by the parsers.
+    /// Linear scan: heading counts are small enough that a binary search would
+    /// not pay for itself.
     /// </summary>
     private static string? SectionTitleAt(IReadOnlyList<HeadingMarker> headings, int offset)
     {
