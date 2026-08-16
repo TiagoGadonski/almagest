@@ -29,3 +29,6 @@ Thumbs.db
 
 # Downloaded ONNX models (fetched by scripts/download-onnx-model.sh, not committed)
 models/
+
+# Personal sample documents used for local ingestion
+samples/
