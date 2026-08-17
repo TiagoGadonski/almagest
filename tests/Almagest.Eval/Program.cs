@@ -48,8 +48,15 @@ IChatClient chatClient = anthropic
     .Build();
 IChatService chatService = new ClaudeChatService(chatClient);
 
+// SimilarityFloor: 0.45, matching src/Almagest.Api/Program.cs -- this was
+// still the original 0.70 guess here, never updated after the real
+// calibration (see that file's comment and README "How the similarity
+// floor was calibrated"). With 0.70, AskQuestionUseCase's own floor filter
+// rejected every real match before generation, independent of recall@5
+// (which reads raw IChunkStore.SearchAsync results and never applies this
+// floor) -- the actual cause of a 100% recall@5 / 7% accuracy run.
 var askQuestionUseCase = new AskQuestionUseCase(
-    embeddingService, chunkStore, chatService, new RetrievalOptions(TopK: 5, SimilarityFloor: 0.70, MaxContextTokens: 4000));
+    embeddingService, chunkStore, chatService, new RetrievalOptions(TopK: 5, SimilarityFloor: 0.45, MaxContextTokens: 4000));
 
 DocumentTitleLookup lookupDocumentTitles = async (documentIds, cancellationToken) =>
 {
@@ -72,5 +79,22 @@ DocumentTitleLookup lookupDocumentTitles = async (documentIds, cancellationToken
 };
 
 const int topK = 5;
-var report = await EvalRunner.RunAsync(questions, askQuestionUseCase, embeddingService, chunkStore, lookupDocumentTitles, topK);
+
+// Default 25s: Voyage's free tier is 3 requests/minute, so anything faster
+// than ~20s between questions (each of which calls both Voyage and Claude)
+// eventually 429s. See tests/eval/questions.md for the rationale.
+var delayMs = int.TryParse(Environment.GetEnvironmentVariable("ALMAGEST_EVAL_DELAY_MS"), out var parsedDelayMs)
+    ? parsedDelayMs
+    : 25_000;
+
+var report = await EvalRunner.RunAsync(
+    questions,
+    askQuestionUseCase,
+    embeddingService,
+    chunkStore,
+    lookupDocumentTitles,
+    topK,
+    TimeSpan.FromMilliseconds(delayMs),
+    logProgress: message => Console.Error.WriteLine(message));
+
 EvalReportPrinter.Print(report, topK);

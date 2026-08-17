@@ -41,6 +41,25 @@ public class EvalQuestionParserTests
     }
 
     [Fact]
+    public void Parse_FactsWithLeadingSpaceAfterSemicolon_AreTrimmed()
+    {
+        // The source table always has a space after ';' for readability
+        // (e.g. "confian; elo mais fraco") -- an untrimmed leading space
+        // would make EvalScorer.IsAccurate's Contains() check fail even
+        // when the fact is genuinely present in the answer.
+        const string markdown = """
+            | Question | Expected Facts | Expected Document |
+            |---|---|---|
+            | Q | first;  second ;third | Doc |
+            """;
+
+        var questions = EvalQuestionParser.Parse(markdown);
+
+        Assert.Equal(["first", "second", "third"], questions[0].ExpectedFacts);
+        Assert.All(questions[0].ExpectedFacts, fact => Assert.False(fact.StartsWith(' ') || fact.EndsWith(' ')));
+    }
+
+    [Fact]
     public void Parse_SingleExpectedFact_DoesNotSplitOnAnythingButSemicolon()
     {
         const string markdown = """

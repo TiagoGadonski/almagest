@@ -80,4 +80,30 @@ public class AskQuestionUseCaseTests
 
         Assert.Equal(EmbeddingPurpose.Query, embeddingService.LastPurpose);
     }
+
+    [Fact]
+    public async Task ExecuteAsync_PrecomputedEmbeddingGiven_DoesNotEmbedAgain()
+    {
+        var chunk = DocumentChunk.Create(Guid.NewGuid(), "Paris is the capital of France.", 0, "Geography");
+        var chunkStore = new FakeChunkStore([new ScoredChunk(chunk, 0.85, "test-model")]);
+        var embeddingService = new FakeEmbeddingService("test-model");
+        var useCase = new AskQuestionUseCase(embeddingService, chunkStore, new FakeChatService(), Options);
+        var precomputed = new float[] { 1f, 2f, 3f };
+
+        var result = await useCase.ExecuteAsync("What is the capital of France?", precomputed);
+
+        Assert.Equal(0, embeddingService.CallCount); // reused, not re-embedded
+        Assert.True(result.Found);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NoPrecomputedEmbedding_EmbedsExactlyOnce()
+    {
+        var embeddingService = new FakeEmbeddingService("test-model");
+        var useCase = new AskQuestionUseCase(embeddingService, new FakeChunkStore(), new FakeChatService(), Options);
+
+        await useCase.ExecuteAsync("What is X?");
+
+        Assert.Equal(1, embeddingService.CallCount);
+    }
 }

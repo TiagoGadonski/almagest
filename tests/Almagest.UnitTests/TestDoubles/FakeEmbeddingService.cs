@@ -11,9 +11,12 @@ public sealed class FakeEmbeddingService(string modelId, Func<IReadOnlyList<stri
 
     public EmbeddingPurpose? LastPurpose { get; private set; }
 
+    public int CallCount { get; private set; }
+
     public Task<IReadOnlyList<float[]>> EmbedAsync(
         IReadOnlyList<string> texts, EmbeddingPurpose purpose, CancellationToken cancellationToken = default)
     {
+        CallCount++;
         LastRequest = texts;
         LastPurpose = purpose;
 

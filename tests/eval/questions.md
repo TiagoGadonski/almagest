@@ -10,6 +10,20 @@ Expected document is matched against the ingested document's *title*
 (substring, case-insensitive). Expected facts are semicolon-separated; all of
 them must be present for the question to count as accurate.
 
+## Running this harness
+
+On Voyage's free tier (3 requests/minute), firing one embedding call per
+question with no pacing exhausts the quota mid-run and the run aborts with
+`EmbeddingProviderException`. `Almagest.Eval` pauses between questions —
+default 25 seconds, controlled by `ALMAGEST_EVAL_DELAY_MS` (milliseconds).
+Raise it if a run still gets rate-limited; lower it (or set it to `0`) once
+running against a paid tier or Anthropic/Voyage keys with more headroom.
+Progress is logged to stderr as `question N of M` so a slow run doesn't
+look stuck. If an individual question still fails (rate limit or otherwise),
+the run does not abort — the failure is recorded and reported separately at
+the end, excluded from the recall/accuracy denominator, and the remaining
+questions still run.
+
 ## How these rows are written
 
 Because accuracy is a plain substring check, expected facts are **short,

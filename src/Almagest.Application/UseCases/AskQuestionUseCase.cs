@@ -35,9 +35,16 @@ public sealed class AskQuestionUseCase
         _options = options;
     }
 
-    public async Task<AskResult> ExecuteAsync(string question, CancellationToken cancellationToken = default)
+    // queryEmbedding: precomputed vector for this question, if the caller
+    // already has one (Almagest.Eval computes it once and reuses it for
+    // both recall@5's raw SearchAsync and this call, instead of paying for
+    // two identical embedding requests per question -- see
+    // tests/eval/questions.md). Null (the default, every non-eval caller)
+    // embeds internally exactly as before.
+    public async Task<AskResult> ExecuteAsync(
+        string question, float[]? queryEmbedding = null, CancellationToken cancellationToken = default)
     {
-        var queryEmbedding = (await _embeddingService.EmbedAsync([question], EmbeddingPurpose.Query, cancellationToken).ConfigureAwait(false))[0];
+        queryEmbedding ??= (await _embeddingService.EmbedAsync([question], EmbeddingPurpose.Query, cancellationToken).ConfigureAwait(false))[0];
 
         var candidates = await _chunkStore.SearchAsync(queryEmbedding, _options.TopK, filter: null, cancellationToken).ConfigureAwait(false);
 

@@ -287,7 +287,7 @@ app.MapPost("/ask", async (
     AskResult ragResult;
     try
     {
-        ragResult = await ragUseCase.ExecuteAsync(request.Question, cancellationToken);
+        ragResult = await ragUseCase.ExecuteAsync(request.Question, cancellationToken: cancellationToken);
     }
     catch (EmbeddingProviderException ex)
     {

@@ -1,47 +1,34 @@
-# Fly.io deployment manifest for Almagest.Api.
+# fly.toml app configuration file generated for almagest on 2026-08-17T17:15:29-03:00
 #
-# Not executed from this environment (no Fly.io credentials here) --
-# reviewed for correctness against the existing Dockerfile/docker-compose.yml
-# shape, `docker build` verified locally and in CI, not proven against a
-# real Fly deploy. See docs/deployment/first-deploy.md for the exact command
-# sequence, and docs/phases/05-production.md §3.6 and §7.
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
-# `fly postgres attach` sets DATABASE_URL automatically as a secret, in
-# Fly's own URI shape (postgres://user:pass@host:port/db?sslmode=...).
-# Almagest.Api reads that directly -- no manual reformatting into
-# ALMAGEST_CONNECTION_STRING is needed; PostgresConnectionStringTranslator
-# (src/Almagest.Infrastructure/Persistence/) converts it automatically at
-# startup (ALMAGEST_CONNECTION_STRING still works too, and takes precedence,
-# for docker-compose/local dev where it's built explicitly).
 
-app = "almagest"
-primary_region = "gru"                  # São Paulo -- change to fit where the project owner actually is
+app = 'almagest'
+primary_region = 'gru'
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = 'Dockerfile'
 
 [env]
-  ANTHROPIC_MODEL = "claude-haiku-4-5"
-  VOYAGE_MODEL = "voyage-4"
-  # DATABASE_URL: set automatically by `fly postgres attach`, not written
-  # here. ANTHROPIC_API_KEY, VOYAGE_API_KEY: secrets, set by hand via
-  # `fly secrets set` (see docs/deployment/first-deploy.md) -- never written
-  # here either.
+  ANTHROPIC_MODEL = 'claude-haiku-4-5'
+  VOYAGE_MODEL = 'voyage-4'
 
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = "stop"
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
 
   [[http_service.checks]]
-    grace_period = "10s"
-    interval = "15s"
-    timeout = "5s"
-    method = "GET"
-    path = "/health"
+    interval = '15s'
+    timeout = '5s'
+    grace_period = '10s'
+    method = 'GET'
+    path = '/health'
 
 [[vm]]
-  size = "shared-cpu-1x"
-  memory = "512mb"
+  size = 'shared-cpu-1x'
+  memory = '512mb'
+  cpus = 1
+  memory_mb = 512

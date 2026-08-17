@@ -66,4 +66,28 @@ public class EvalScorerTests
 
         Assert.True(result.Accurate);
     }
+
+    [Fact]
+    public void MissingFacts_ReturnsOnlyTheFactsNotPresent()
+    {
+        var missing = EvalScorer.MissingFacts("The rent is R$ 2.200.", ["R$ 2.200", "renews in March"]);
+
+        Assert.Equal(["renews in March"], missing);
+    }
+
+    [Fact]
+    public void MissingFacts_AllFactsPresent_ReturnsEmpty()
+    {
+        var missing = EvalScorer.MissingFacts("The rent is R$ 2.200 and it renews in March.", ["R$ 2.200", "renews in March"]);
+
+        Assert.Empty(missing);
+    }
+
+    [Fact]
+    public void MissingFacts_NoFactsPresent_ReturnsAllOfThem()
+    {
+        var missing = EvalScorer.MissingFacts("completely unrelated text", ["R$ 2.200", "renews in March"]);
+
+        Assert.Equal(["R$ 2.200", "renews in March"], missing);
+    }
 }

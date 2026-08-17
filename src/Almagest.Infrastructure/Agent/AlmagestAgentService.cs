@@ -98,7 +98,7 @@ public sealed class AlmagestAgentService : IAgentService
         [Description("The question to answer from the user's documents.")] string question,
         CancellationToken cancellationToken)
     {
-        var result = await RetryAsync(() => _askQuestionUseCase.ExecuteAsync(question, cancellationToken)).ConfigureAwait(false);
+        var result = await RetryAsync(() => _askQuestionUseCase.ExecuteAsync(question, cancellationToken: cancellationToken)).ConfigureAwait(false);
         return result.Found ? result.Answer : "Not found in the user's documents.";
     }
 

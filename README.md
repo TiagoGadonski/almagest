@@ -1,5 +1,12 @@
 # Almagest
 
+**Live: [https://almagest.fly.dev](https://almagest.fly.dev)** — API on
+Fly.io (region `gru`, scales to zero machines when idle), database on
+Neon's free tier with `pgvector`. Neon over Fly's own Managed Postgres for
+cost: Fly MPG starts at USD 38/month, not justified for a single-user
+portfolio project. CI (`.github/workflows/ci.yml`) passed on GitHub's own
+runners on its first execution.
+
 Ingests your PDFs and Markdown files, answers questions about them with
 per-claim citations and a similarity score, and answers questions against
 your own structured data (contacts, tasks, calendar) by generating SQL
@@ -9,43 +16,57 @@ under five layers of validation. Solo project, .NET 8, Clean Architecture.
 
 ## Demo
 
-Ingesting a document from the current test corpus:
+Asking a real question against the live deployment (question, translated:
+*"What is a smart city, and what fields of knowledge contribute to it?"*):
+
+```bash
+curl -X POST https://almagest.fly.dev/ask -H "Content-Type: application/json" \
+  -d '{"question":"O que e uma cidade inteligente e quais areas do conhecimento contribuem para isso?"}'
+```
+
+Real response, captured from the live deployment while writing this README:
+
+```json
+{
+  "route": "rag",
+  "found": true,
+  "answer": "# O que é uma Cidade Inteligente e Áreas do Conhecimento Contribuintes\n\n## Definição de Cidade Inteligente\n\nSegundo os excertos, uma cidade inteligente vai além de apenas tecnologia. [chunk:2a9a8e42...] define uma cidade inteligente como \"aquela capaz de combinar tecnologia, planejamento urbano, sustentabilidade, governança e participação social para resolver problemas concretos.\" [...] ## Áreas do Conhecimento Contribuintes\n\n- Engenharia\n- Arquitetura\n- Ciência de dados\n- Administração pública\n- Economia\n- Psicologia ambiental\n- Políticas públicas",
+  "citations": [
+    { "chunkId": "2a9a8e42-e251-4436-8088-bbb636ea4821", "sectionTitle": "Cidades Inteligentes e Sustentáveis: Tecnologia, Mobilidade, Energia e Qualidade de Vida", "similarity": 0.6459229203508555 },
+    { "chunkId": "0ca4c259-a888-4dcf-bc15-871bd74a1bfb", "sectionTitle": "Privacidade e proteção de dados", "similarity": 0.6204343068340845 },
+    { "chunkId": "a29f155d-b5fc-4f55-b885-e8d7c1eddd35", "sectionTitle": "Considerações finais", "similarity": 0.6071799216514874 }
+  ]
+}
+```
+
+(Two more citations at similarity 0.60 and 0.59 omitted for length.) The
+scores are identical to the ones this same question produced against a
+separately-ingested local copy of the same source document — embeddings
+are deterministic, so the same text under the same model lands on the same
+similarity regardless of which database stores it. Chunk and document IDs
+differ because it's a different (Neon, not local) database.
+
+A question with nothing in the corpus, against the same live deployment:
+
+```bash
+curl -X POST https://almagest.fly.dev/ask -H "Content-Type: application/json" \
+  -d '{"question":"Qual a receita de feijoada?"}'
+```
+
+```json
+{"route":"rag","answer":"I couldn't find anything in your documents that answers this question.","found":false,"citations":[]}
+```
+
+Ingesting a new document — this part only makes sense run locally, not
+against the shared public deployment:
 
 ```bash
 curl -X POST localhost:8080/documents -F "file=@cidades_inteligentes_rag.md"
 ```
 
 Real state after ingestion, queried from the database: this file produced
-5 chunks (document id `e256b150-eb91-48f9-b892-f5d274a9b76f`), one of 7
-documents / 17 chunks currently indexed.
-
-Asking a question against it (question, translated: *"What is a smart
-city, and what fields of knowledge contribute to it?"*):
-
-```bash
-curl -X POST localhost:8080/ask -H "Content-Type: application/json" \
-  -d '{"question":"O que e uma cidade inteligente e quais areas do conhecimento contribuem para isso?"}'
-```
-
-Real response, captured while writing this README:
-
-```json
-{
-  "route": "rag",
-  "found": true,
-  "answer": "# O que é uma Cidade Inteligente e Suas Áreas de Conhecimento\n\n## Definição de Cidade Inteligente\n\nUma cidade inteligente é aquela que combina **tecnologia, planejamento urbano, sustentabilidade, governança e participação social** para resolver problemas concretos [chunk:57697a2b-dbce-4f78-9007-816dcbd3e881]. [...] ## Áreas do Conhecimento que Contribuem\n\n- Engenharia\n- Arquitetura\n- Ciência de dados\n- Administração pública\n- Economia\n- Psicologia ambiental\n- Políticas públicas [chunk:57697a2b-dbce-4f78-9007-816dcbd3e881]",
-  "citations": [
-    { "chunkId": "57697a2b-dbce-4f78-9007-816dcbd3e881", "sectionTitle": "Cidades Inteligentes e Sustentáveis: Tecnologia, Mobilidade, Energia e Qualidade de Vida", "similarity": 0.6459229203508555 },
-    { "chunkId": "622c9fd9-93f5-48a4-942d-8fc4ed901b2d", "sectionTitle": "Privacidade e proteção de dados", "similarity": 0.6204343068340845 },
-    { "chunkId": "a006e99e-4ee3-409c-a268-ea767de036f3", "sectionTitle": "Considerações finais", "similarity": 0.6071799216514874 }
-  ]
-}
-```
-
-(Two more citations at similarity 0.60 and 0.59 omitted here for length.)
-A question with no support in the corpus returns `"found": false` and an
-explicit "I couldn't find anything in your documents that answers this
-question" instead of an improvised answer.
+5 chunks, one of 7 documents / 17 chunks in the local corpus (the live
+deployment's Neon database was seeded with the same documents separately).
 
 ## Run it in three commands
 
@@ -160,7 +181,7 @@ whole point.** Every use case depends on ports (`IChatService`,
 `IEmbeddingService`, `ISqlExecutor`, ...) that `Application` itself
 declares; every concrete client — the official `Anthropic` package,
 `Npgsql`, `Microsoft.Agents.AI`, ONNX Runtime — lives in `Infrastructure`
-and nowhere else. This is what makes 88 unit tests run against hand-written
+and nowhere else. This is what makes 94 unit tests run against hand-written
 fakes with zero network calls and zero database. It also survived a real
 test: this project's Anthropic client started on the community `Anthropic.SDK`
 package, hit a `MissingMethodException` against a real account, and moved
@@ -180,14 +201,36 @@ the asymmetric-embedding bug above, real questions against the real,
 ingested 17-chunk corpus scored 0.59–0.67 when the answer was genuinely
 present, and at most 0.40 when it wasn't. 0.45 sits in that gap.
 
-That sample is small — a handful of manually-run questions, not a measured
-recall curve — and it's the reason `tests/Almagest.Eval` exists: an eval
-harness that reports recall@5 and keyword-match accuracy mechanically, no
-LLM judge. It has not completed a run yet — the free-tier API plan's rate
-limit was hit before a full pass finished. No recall or accuracy number is
-reported anywhere in this repo. The number this section actually gives you
-is the raw similarity range above; treat it as a starting point pending a
-real eval run, not a benchmark result.
+That sample was small — a handful of manually-run questions, not a
+measured recall curve — which is the reason `tests/Almagest.Eval` exists:
+an eval harness that reports recall@5 and keyword-match accuracy
+mechanically, no LLM judge. It has since completed a real run — see
+[Evaluation](#evaluation) below for the numbers.
+
+## Evaluation
+
+```
+recall@5: 100% (14/14)
+accuracy: 57% (8/14)
+```
+
+Real numbers from a real run of `dotnet run --project tests/Almagest.Eval`,
+against the 14 real questions in
+[`tests/eval/questions.md`](tests/eval/questions.md), on the local
+17-chunk corpus. Required context, not softened:
+
+- **Recall is optimistic by construction.** The corpus is 17 chunks, so
+  top-5 retrieval covers roughly a third of everything indexed. This
+  validates that the pipeline works end to end; it is not a retrieval
+  benchmark.
+- **Of the 6 accuracy misses, 4 are correct answers expressed in different
+  words than the expected fact stems** — a limit of substring matching,
+  not a retrieval failure. **The other 2** are chunks that made it into the
+  top-5 but scored below the 0.45 confidence floor before generation, so
+  `AskQuestionUseCase` returned "not found" instead of an answer.
+- **The expected facts in `tests/eval/questions.md` were not adjusted
+  after seeing the generated answers.** These are the numbers from the
+  first completed run, not a curve-fit result.
 
 ## Known limitations
 
@@ -208,6 +251,8 @@ had caught, both fixed as of this writing:
 
 | Gap | Why it matters | Next step |
 |---|---|---|
+| Retrieval parameters (`SimilarityFloor` etc.) are duplicated across composition roots | `Almagest.Api/Program.cs` and `Almagest.Eval/Program.cs` each hardcode their own `RetrievalOptions`, with no shared source of truth. The eval harness silently measured a different configuration than the one the API served (floor 0.70 vs. 0.45) until this was discovered by reading its own diagnostic output | Later iteration |
+| `Almagest.Api` and `Almagest.Eval` read different environment variables for the database connection string | `Almagest.Api` accepts both `ALMAGEST_CONNECTION_STRING` and `DATABASE_URL` (translating the `postgres://` URI form automatically). `Almagest.Eval` only reads `ALMAGEST_CONNECTION_STRING` — pointing it at a Fly/Neon-style `postgres://` URL requires reformatting it by hand first | Later iteration |
 | Rate limiting is sized for a single burst, not an account-wide quota | Retry-with-backoff smooths over one request's transient 429s; nothing tracks the account's overall RPM/TPM budget across concurrent requests | Later iteration |
 | No validation that extracted text is legible before embedding | A corrupted PDF extraction (garbled OCR, wrong encoding) is chunked and embedded as-is | Later iteration |
 | No PII or secrets detection at ingestion | Documents are embedded and stored as given, no scan first | Later iteration |
@@ -219,8 +264,7 @@ had caught, both fixed as of this writing:
 | Eval accuracy grading is substring/keyword matching, no LLM judge | A coarse proxy for correctness; an LLM-judge upgrade needs its own individually-approved prompt | Later iteration |
 | OpenTelemetry's token-cost table is a hardcoded $/million-token constant | Not fed by a live pricing source, will drift out of date | Later iteration |
 | `Almagest.Infrastructure`'s test coverage is not measured | The CI coverage gate is scoped to `Almagest.Application` only; Infrastructure — where the SQL security logic and Postgres role-switching live — has no measured number | Later iteration |
-| No live GitHub Actions run observed | No push access from this environment | First push |
-| No live Fly.io deployment | No cloud credentials in this environment; deploying is a real-cost action needing the project owner present | The project owner |
+| The Fly machine hibernates when idle (`min_machines_running = 0`) | The first request after a period of inactivity takes several seconds while Fly starts the machine back up | Accepted tradeoff — cost savings for a single-user portfolio project |
 | No load or performance testing | Nothing in scope needs it yet at personal-data scale | Later iteration |
 | No multi-statement SQL sessions ("narrow that down") | Chat memory isn't wired into the SQL path | Later iteration |
 | Only note/reminder creation, no edit/delete | Update/delete is a larger blast radius per side-effecting action | Later iteration |
@@ -228,18 +272,21 @@ had caught, both fixed as of this writing:
 
 ## Next steps
 
-- Rewrite `tests/eval/questions.md` against the real ingested corpus and
-  run `Almagest.Eval` to completion once past the rate limit — first real
-  recall@5/accuracy numbers.
-- Run the first real Fly.io deploy per
-  [`docs/deployment/first-deploy.md`](docs/deployment/first-deploy.md);
-  that document names exactly what's unverified about it.
-- Push to GitHub and observe the first real CI run
-  (`.github/workflows/ci.yml`) — reviewed and passes `actionlint` and a
-  local `docker build`, never executed by GitHub itself.
+- Extract `RetrievalOptions` (and the connection-string resolution) into
+  configuration shared between `Almagest.Api` and `Almagest.Eval`, so the
+  two composition roots can't silently drift apart the way `SimilarityFloor`
+  just did — see [Known limitations](#known-limitations).
+- Investigate the 2 genuine "not found" misses from the [Evaluation](#evaluation)
+  run (top-5 chunks that scored below the 0.45 floor) — is the floor still
+  slightly high, or is that specific content under-represented in the
+  corpus?
 - Write the per-layer fault-injection test for the text-to-SQL security
   stack (disable each layer in turn, confirm the others still catch the
   attack) — the gap named twice above.
+- `docs/deployment/first-deploy.md` still describes the deploy as
+  hypothetical ("not executed from this environment") — now stale, since
+  the deploy above is real. Needs a pass to reconcile it with what actually
+  happened.
 
 ---
 
