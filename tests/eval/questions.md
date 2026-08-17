@@ -7,24 +7,68 @@ appears as a case-insensitive substring of `AskQuestionUseCase`'s generated
 answer. Both are mechanical string checks — no LLM judge.
 
 Expected document is matched against the ingested document's *title*
-(substring, case-insensitive). Expected facts are semicolon-separated;
-all of them must be present for the question to count as accurate.
+(substring, case-insensitive). Expected facts are semicolon-separated; all of
+them must be present for the question to count as accurate.
 
-> **Placeholder set.** These rows describe the *shape* of a real eval set —
-> one plausible question per personal-document category this project is
-> meant to answer questions about. Ingestion itself works and has been
-> verified against a real corpus (7 documents, 17 chunks — see
-> `docs/phases/05-production.md` §7), but these specific rows don't
-> correspond to that corpus, and `Almagest.Eval` has not been run against
-> them. Replace these rows with questions against your own ingested
-> documents, keeping the same three-column shape, then run
-> `dotnet run --project tests/Almagest.Eval` for real.
+## How these rows are written
+
+Because accuracy is a plain substring check, expected facts are **short,
+distinctive stems** rather than full phrases. `governan` matches both
+"governança" and "governantes"; `confian` matches "confiança" and "confiar".
+Two facts per question is deliberate: every additional fact is another chance
+for a false negative caused by the model's phrasing rather than by a genuine
+retrieval failure. The stems are ugly to read on purpose — the metric measures
+whether the right information was retrieved, not whether the model conjugated
+verbs the way the question author would have.
+
+Questions are a mix of direct lookups (vocabulary close to the source text)
+and paraphrases (same answer, different words). The paraphrased ones — the
+tech-support impersonation question, and the one about sensors not being
+sufficient on their own — are the ones that distinguish semantic retrieval
+from keyword matching.
+
+## Known limits of this measurement
+
+- **The corpus is small.** 7 documents / 17 chunks. Top-5 retrieval therefore
+  covers roughly a third of everything indexed, so recall@5 is optimistic by
+  construction. It validates that the pipeline works end to end; it is not a
+  retrieval benchmark. A corpus an order of magnitude larger is needed for
+  that.
+- **Document coverage is uneven.** Five of the seven documents produced only
+  one or two chunks, so they carry a single question each. Only
+  `Engenharia_Social` (6 chunks) and `cidades_inteligentes` (5 chunks) support
+  real variety.
+- **False positives are not measured here.** The scorer treats an empty
+  expected-document string as a recall hit and an empty fact list as an
+  inaccurate answer, so out-of-corpus questions cannot be encoded in this
+  table without corrupting both metrics. They are tested manually instead —
+  see below.
+
+## Out-of-corpus questions (tested manually, not by this harness)
+
+These should all return `found: false`. Run them against `POST /ask` by hand
+and record the outcome in the README.
+
+- Qual a taxa Selic atual?
+- Como configurar um cluster Kubernetes?
+- Qual a receita de feijoada?
+- Quantos habitantes tem Curitiba?
+
+---
 
 | Question | Expected Facts | Expected Document |
 |---|---|---|
-| What is the monthly rent on my apartment lease, and when does it renew? | R$ 2.200; renews in March | Apartment Lease Agreement |
-| What deductible applies to my car insurance policy? | R$ 1.500 deductible | Auto Insurance Policy |
-| What did we decide about the Q3 roadmap in last week's planning meeting? | ship the mobile app in September | Q3 Planning Meeting Notes |
-| Which vaccinations does my dog still need this year? | rabies booster; due in June | Vet Visit Summary |
-| What's the total balance due on last month's credit card statement? | R$ 3.845,20 | Credit Card Statement — October |
-| What warranty period covers my new laptop? | 2-year warranty | Laptop Purchase Receipt |
+| O que a Engenharia Social explora para obter informações importantes de uma organização? | elo mais fraco; confian | Engenharia_Social |
+| Por quais meios um ataque de Engenharia Social pode ser realizado? | telefone; e-mail | Engenharia_Social |
+| Por que um contato que se apresenta como suporte técnico pode comprometer uma conta mesmo sem explorar uma falha do sistema? | suporte; senha | Engenharia_Social |
+| No exemplo de Kevin Mitnick, como um disquete deixado no banheiro poderia ser usado num ataque? | curiosidade; Cavalo de Tr | Engenharia_Social |
+| Qual é a principal defesa contra ataques de Engenharia Social? | treinamento; polític | Engenharia_Social |
+| Quais elementos compõem uma definição completa de cidade inteligente? | tecnologia; planejamento urbano; governan | cidades_inteligentes |
+| Para que servem programas de dados abertos numa cidade inteligente? | transparên; dados abertos | cidades_inteligentes |
+| Por que espalhar sensores pela cidade não garante, por si só, uma gestão mais eficiente? | integra; qualidade dos dados | cidades_inteligentes |
+| O que é manutenção preditiva e qual seu objetivo em sistemas urbanos? | desgaste; antes da falha | cidades_inteligentes |
+| No caso de Nova Aurora, quais conexões de dados gerariam ganhos no transporte e na resposta a enchentes? | bilhetagem; defesa civil | cidades_inteligentes |
+| Como priorizar o pagamento de dívidas e qual o tamanho ideal da reserva de emergência? | juros mais altos; reserva de emergência | Educacao-Financeira |
+| Que cuidados tomar ao começar a investir com pouco capital? | perfil de risco; diversific | Educacao-Financeira |
+| Quais fatores determinam a rentabilidade de um FII obtida por meio dos aluguéis? | vacância; dividendo | Invista-em-FII |
+| Que tipos de produtos digitais podem ser vendidos para gerar renda extra na internet? | e-book; curso | Ganhe-Renda-Extra |

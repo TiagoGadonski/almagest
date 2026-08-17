@@ -34,11 +34,11 @@ Correctness and understanding matter more than speed here.
   - `Domain` references nothing.
   - `Application` references `Domain` and the `Microsoft.Extensions.AI`
     abstractions only.
-  - `Semantic Kernel`, `Anthropic.SDK` and `Npgsql` are confined to
+  - `Anthropic`, `Microsoft.Agents.AI` and `Npgsql` are confined to
     `Infrastructure`.
   - No concrete AI type crosses the Application boundary.
 - Conventional Commits. Scope by layer where it helps: `feat(application):`.
-- Semantic Kernel and vector-data packages ship as preview: pin exact versions
+- Agent Framework and vector-data packages ship as preview: pin exact versions
   in the `.csproj`. Never a floating range.
 - Secrets via environment variables or `dotnet user-secrets`. Never in
   `appsettings.json`.
@@ -57,8 +57,11 @@ docker compose up -d
 ## Known pitfalls
 
 - The Anthropic API requires `max_tokens`. Omitting it returns an opaque 400.
-- There is no first-party Anthropic connector for Semantic Kernel in .NET.
-  The path is `Anthropic.SDK` → `IChatClient` → `AsChatCompletionService()`.
+- LLM access uses the official `Anthropic` package exposing `IChatClient`.
+  The community `Anthropic.SDK` was tried in Phase 1 and dropped after a
+  runtime `MissingMethodException` from a binary incompatibility with
+  `Microsoft.Extensions.AI.Abstractions`. Semantic Kernel was removed
+  entirely in Phase 5 — see ADR 5.
 - Anthropic ships no embedding model. Embeddings come from a separate provider
   (Voyage AI) through a hand-written adapter implementing
   `IEmbeddingGenerator<string, Embedding<float>>`.
@@ -70,3 +73,9 @@ docker compose up -d
 - Vector-data connector packages have been renamed more than once
   (`Connectors.Postgres` → `Connectors.PgVector`). Verify against the current
   package listing rather than older tutorials.
+- Embeddings are asymmetric: indexing uses `EmbeddingPurpose.Document`,
+  queries use `EmbeddingPurpose.Query`. Sending both as "document" silently
+  degrades similarity — the cause of an early bug where retrieval never
+  returned anything.
+- Voyage free tier is 3 RPM / 10K TPM. Large documents fail deterministically
+  without batch partitioning.
