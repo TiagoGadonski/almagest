@@ -14,11 +14,30 @@ using Almagest.Infrastructure.Sql;
 using Almagest.Infrastructure.Telemetry;
 using Anthropic;
 using Microsoft.Extensions.AI;
+using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// --- API documentation (Swagger/OpenAPI) ------------------------------------
+// Enabled in every environment, including Production -- deliberately not
+// gated behind IsDevelopment(). This is a public portfolio demo with no
+// other landing page; GET / 404ing for anyone who clicks the README's live
+// link is worse than showing the API surface. See README "Live demo".
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Almagest",
+        Version = "v1",
+        Description = "Personal knowledge assistant: RAG over your documents (with citations), " +
+            "text-to-SQL over personal data (five-layer defense in depth), and a tool-calling agent. " +
+            "Source and full documentation: the repo linked from this API's README.",
+    });
+});
 
 // --- Telemetry --------------------------------------------------------------
 // Console exporter always on (cheap, useful for local verification without a
@@ -161,6 +180,14 @@ builder.Services.AddSingleton<IAgentService, AlmagestAgentService>();
 
 var app = builder.Build();
 
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Almagest v1");
+    options.RoutePrefix = string.Empty; // serve at "/" instead of the default "/swagger"
+    options.DocumentTitle = "Almagest API";
+});
+
 // Checks real database connectivity, not just "the process is up" -- Fly's
 // own health check (fly.toml [[http_service.checks]]) polls this to decide
 // whether to route traffic to a machine, so a database outage should
@@ -186,7 +213,9 @@ app.MapGet("/health", async (NpgsqlDataSource dataSource, ILogger<Program> logge
             title: "Database connectivity check failed",
             statusCode: StatusCodes.Status503ServiceUnavailable);
     }
-});
+})
+.WithSummary("Health check")
+.WithDescription("Verifies real database connectivity, not just process liveness.");
 
 // Both a credential problem (our own server's Voyage key is bad -- a
 // misconfiguration, not the caller's fault) and a rate limit (the caller's
@@ -256,7 +285,11 @@ app.MapPost("/documents", async (HttpRequest request, IngestDocumentUseCase useC
         chunkCount = result.ChunkCount,
         metadataExtracted = result.MetadataExtracted,
     });
-});
+})
+.WithSummary("Ingest a document")
+.WithDescription("Parses, chunks, embeds, and stores a PDF or Markdown file. " +
+    "Calls real Voyage/Anthropic APIs (real cost) and writes to the production database -- " +
+    "\"Try it out\" here is not a sandbox.");
 
 app.MapPost("/ask", async (
     AskApiRequest request,
@@ -295,7 +328,11 @@ app.MapPost("/ask", async (
     }
 
     return Results.Ok(new { route = "rag", answer = ragResult.Answer, found = ragResult.Found, citations = ragResult.Citations });
-});
+})
+.WithSummary("Ask a question")
+.WithDescription("Routes to RAG (your documents) or text-to-SQL (personal data) automatically " +
+    "and returns a grounded answer with citations and a similarity score. Read-only, but calls " +
+    "real Voyage/Anthropic APIs.");
 
 app.MapPost("/chat", async (ChatApiRequest request, ChatUseCase useCase, HttpResponse response, CancellationToken cancellationToken) =>
 {
@@ -331,7 +368,11 @@ app.MapPost("/chat", async (ChatApiRequest request, ChatUseCase useCase, HttpRes
     await response.WriteAsync("event: done\ndata: {}\n\n", cancellationToken);
 
     return Results.Empty;
-});
+})
+.WithSummary("Multi-turn chat (streaming)")
+.WithDescription("Server-Sent Events stream of a grounded answer, with conversation memory " +
+    "across turns. Calls real Voyage/Anthropic APIs and persists the conversation. Swagger UI's " +
+    "\"Try it out\" does not render SSE streams well -- use curl with -N instead.");
 
 app.MapPost("/agent", async (AgentApiRequest request, IAgentService agentService, CancellationToken cancellationToken) =>
 {
@@ -348,7 +389,12 @@ app.MapPost("/agent", async (AgentApiRequest request, IAgentService agentService
         answer = result.Answer,
         pendingApprovals = result.PendingApprovals,
     });
-});
+})
+.WithSummary("Agent turn")
+.WithDescription("Runs one turn of the tool-calling agent. May pause and return a pending " +
+    "approval if it selects a side-effecting tool (create note, set reminder) -- see " +
+    "POST /agent/approve. Read-only tool calls (RAG, text-to-SQL) execute immediately and write " +
+    "nothing.");
 
 app.MapPost("/agent/approve", async (AgentApprovalApiRequest request, IAgentService agentService, CancellationToken cancellationToken) =>
 {
@@ -365,7 +411,11 @@ app.MapPost("/agent/approve", async (AgentApprovalApiRequest request, IAgentServ
         answer = result.Answer,
         pendingApprovals = result.PendingApprovals,
     });
-});
+})
+.WithSummary("Approve or reject an agent action")
+.WithDescription("Resumes a paused agent turn after a human decision on a side-effecting tool " +
+    "call. Approving executes it for real -- creates an actual note or reminder in the " +
+    "production database. \"Try it out\" here is not a sandbox.");
 
 app.Run();
 

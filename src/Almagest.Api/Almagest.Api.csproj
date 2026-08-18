@@ -12,6 +12,16 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.17.0" />
     <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.17.0" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.17.0" />
+    <!-- .NET 8 has no built-in OpenAPI generator (that's a .NET 9 feature);
+         Swashbuckle is Microsoft's own documented recommendation for 8.0.
+         Pinned to the 9.x line deliberately, not the newer 10.x: 10.0
+         upgraded its Microsoft.OpenApi dependency from 1.x to 2.x, and as
+         of this writing that combination has an open, unresolved upstream
+         bug (domaindrivendev/Swashbuckle.AspNetCore issue 3522): a runtime
+         TypeLoadException from Swashbuckle's own SwaggerGenerator, not
+         just a namespace rename in this project's code. 9.0.6 still
+         depends on Microsoft.OpenApi 1.x and is fully supported on .NET 8. -->
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
   </ItemGroup>
 
 </Project>

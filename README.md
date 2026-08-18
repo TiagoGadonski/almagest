@@ -7,6 +7,18 @@ cost: Fly MPG starts at USD 38/month, not justified for a single-user
 portfolio project. CI (`.github/workflows/ci.yml`) passed on GitHub's own
 runners on its first execution.
 
+`GET /` serves interactive Swagger UI (via Swashbuckle), not a 404 —
+deliberate, and deliberately on in every environment including Production,
+not just `Development`. There's no other landing page for this API, and a
+bare `curl`-only demo felt like a worse first impression for anyone
+clicking the link above than a browsable, documented API surface. The real
+cost of that choice: `/documents`, `/agent`, and `/agent/approve` have
+"Try it out" enabled by default, which makes it one click, not a crafted
+`curl` command, to ingest a real file (real Voyage/Anthropic cost) or
+approve a side-effecting agent action (writes to the production database).
+Each of those endpoints says so directly in its Swagger description —
+named there, not just here.
+
 Ingests your PDFs and Markdown files, answers questions about them with
 per-claim citations and a similarity score, and answers questions against
 your own structured data (contacts, tasks, calendar) by generating SQL
@@ -251,6 +263,7 @@ had caught, both fixed as of this writing:
 
 | Gap | Why it matters | Next step |
 |---|---|---|
+| Swagger UI's "Try it out" is enabled by default on every endpoint, including `/documents`, `/agent`, and `/agent/approve` | One click ingests a real file (real Voyage/Anthropic cost) or approves a side-effecting agent action (writes to the production database) — no `curl` command, no confirmation beyond the agent's own approval step, needed | Disable "Try it out" for those three specifically, or gate them behind a warning interstitial |
 | Retrieval parameters (`SimilarityFloor` etc.) are duplicated across composition roots | `Almagest.Api/Program.cs` and `Almagest.Eval/Program.cs` each hardcode their own `RetrievalOptions`, with no shared source of truth. The eval harness silently measured a different configuration than the one the API served (floor 0.70 vs. 0.45) until this was discovered by reading its own diagnostic output | Later iteration |
 | `Almagest.Api` and `Almagest.Eval` read different environment variables for the database connection string | `Almagest.Api` accepts both `ALMAGEST_CONNECTION_STRING` and `DATABASE_URL` (translating the `postgres://` URI form automatically). `Almagest.Eval` only reads `ALMAGEST_CONNECTION_STRING` — pointing it at a Fly/Neon-style `postgres://` URL requires reformatting it by hand first | Later iteration |
 | Rate limiting is sized for a single burst, not an account-wide quota | Retry-with-backoff smooths over one request's transient 429s; nothing tracks the account's overall RPM/TPM budget across concurrent requests | Later iteration |
